@@ -386,8 +386,7 @@ public:
         M[2][2][4][4] -= c2_w2;
 
         cdouble det = polyDet(M, kpara, kperp)/(pow(kpara, 12)*pow(kperp, 6));
-        return det;
-        //return det*pow(wr, 4)/pow((kpara*kpara + kperp*kperp)*cl*cl, 2);
+        return det*pow(wr, 4)/pow((kpara*kpara + kperp*kperp)*cl*cl, 2);
     }
 
     np::ndarray marginalize(const np::ndarray &arr){
