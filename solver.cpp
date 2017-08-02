@@ -121,12 +121,12 @@ public://TODO: private later
     arr2d df_dvpara_h, df_dvperp_h;
     arr1d dvperp_h;
     arr1d vpara_h, vperp_h;
-    arr1d vpara_hm, vpara_hp, dv1, dv2, dv3, dv4;
+    arr1d vpara_hm, vpara_hp, dv1, dv2, dv3;
     vector<int> ns;
     vector<arr1d> jns, jnps;
     vector<array<arr1d, 6>> qs, q_ms, q_cs;
-    vector<array<double, 6>> s_dv1_q_ms, s_dv2_q_ms, s_dv3_q_ms, s_dv4_q_ms;
-    vector<array<double, 6>> s_dv1_q_cs, s_dv2_q_cs, s_dv3_q_cs;
+    vector<array<double, 6>> s_dv1_q_ms, s_dv2_q_ms, s_dv3_q_ms;
+    vector<array<double, 6>> s_dv1_q_cs, s_dv2_q_cs;
     double charge, mass, density;
     double wp, wc;
     size_t npara, nperp;
@@ -159,10 +159,8 @@ public://TODO: private later
             s_dv1_q_ms.push_back({});
             s_dv2_q_ms.push_back({});
             s_dv3_q_ms.push_back({});
-            s_dv4_q_ms.push_back({});
             s_dv1_q_cs.push_back({});
             s_dv2_q_cs.push_back({});
-            s_dv3_q_cs.push_back({});
         }
 
         dvperp_h = arr1d(nperp-1);
@@ -171,7 +169,6 @@ public://TODO: private later
         dv1 = arr1d(npara-1);
         dv2 = arr1d(npara-1);
         dv3 = arr1d(npara-1);
-        dv4 = arr1d(npara-1);
 
         for (size_t i=0;i<nperp-1;i++){
             dvperp_h[i] = vperp_h[i+1] - vperp_h[i];
@@ -183,7 +180,6 @@ public://TODO: private later
             dv1[i] = pow(vpara_hp[i], 1) - pow(vpara_hm[i], 1);
             dv2[i] = pow(vpara_hp[i], 2) - pow(vpara_hm[i], 2);
             dv3[i] = pow(vpara_hp[i], 3) - pow(vpara_hm[i], 3);
-            dv4[i] = pow(vpara_hp[i], 4) - pow(vpara_hm[i], 4);
         }
 
     }
@@ -221,10 +217,8 @@ public://TODO: private later
                 s_dv1_q_ms[ni][k] = 0.0;
                 s_dv2_q_ms[ni][k] = 0.0;
                 s_dv3_q_ms[ni][k] = 0.0;
-                s_dv4_q_ms[ni][k] = 0.0;
                 s_dv1_q_cs[ni][k] = 0.0;
                 s_dv2_q_cs[ni][k] = 0.0;
-                s_dv3_q_cs[ni][k] = 0.0;
             }
             for (size_t i=0;i<npara-1;i++){
                 for (size_t k=0;k<6;k++){
@@ -233,10 +227,8 @@ public://TODO: private later
                     s_dv1_q_ms[ni][k] += q_ms[ni][k][i]*dv1[i];
                     s_dv2_q_ms[ni][k] += q_ms[ni][k][i]*dv2[i];
                     s_dv3_q_ms[ni][k] += q_ms[ni][k][i]*dv3[i];
-                    s_dv4_q_ms[ni][k] += q_ms[ni][k][i]*dv4[i];
                     s_dv1_q_cs[ni][k] += q_cs[ni][k][i]*dv1[i];
                     s_dv2_q_cs[ni][k] += q_cs[ni][k][i]*dv2[i];
-                    s_dv3_q_cs[ni][k] += q_cs[ni][k][i]*dv3[i];
                 }
             }
             //Now add up distributions
@@ -265,127 +257,72 @@ public://TODO: private later
             const double *s_dv2_q_m{s_dv2_q_ms[ni].data()};
             const double *s_dv2_q_c{s_dv2_q_cs[ni].data()};
             const double *s_dv3_q_m{s_dv3_q_ms[ni].data()};
-            const double *s_dv3_q_c{s_dv3_q_cs[ni].data()};
-            const double *s_dv4_q_m{s_dv4_q_ms[ni].data()};
-
-            array<double, 6> s_mdv1_q_m{};
-            array<double, 6> s_mdv1_q_c{};
-            array<double, 6> s_mdv2_q_m{};
-            array<double, 5> s_mdv2_q_c{};
-            array<double, 5> s_mdv3_q_m{};
-            array<double, 3> s_mdv3_q_c{};
-            array<double, 3> s_mdv4_q_m{};
-
-            array<double, 6> s_nmdv1_q_m{};
-            array<double, 6> s_nmdv1_q_c{};
-            array<double, 6> s_nmdv2_q_m{};
-            array<double, 5> s_nmdv2_q_c{};
-            array<double, 5> s_nmdv3_q_m{};
-            array<double, 3> s_nmdv3_q_c{};
-            array<double, 3> s_nmdv4_q_m{};
 
             for (size_t i=0;i<npara-1;i++){
+                //cdouble clogfac{log((apb - d - vpara_hp[i]*kpara)/(apb - d - vpara_hm[i]*kpara))};
 
-                bool mask{abs(a - d - kpara*vpara_hm[i]) < 1E6*dv1[i]*kpara};//Mask is true only when full log treatment is to be applied
-                if (!mask){
-                    continue;
-                }
-                cdouble clogfac{log((apb - d - vpara_hp[i]*kpara)/(apb - d - vpara_hm[i]*kpara))};
-                //double advkp = a - d - vpara_hp[i]*kpara;
-                //double advkm = a - d - vpara_hm[i]*kpara;
-                //double rlogfac = 0.5*std::log((advkp*advkp + b*b)/(advkm*advkm  + b*b));
-                //cdouble clogfac{rlogfac, 0.0};
-                clogfac *= (double)mask;
-                double mdv1 = dv1[i]*mask;
-                double mdv2 = dv2[i]*mask;
-                double mdv3 = dv3[i]*mask;
-                double mdv4 = dv4[i]*mask;
+                double advkm = a - d - vpara_hm[i]*kpara;
+                double rlogfac = 0.5*log1p(dv1[i]*kpara*(dv1[i]*kpara - 2.0*advkm)/(advkm*advkm  + b2));
+                cdouble temp = (apb - d - vpara_hp[i]*kpara)/(apb - d - vpara_hm[i]*kpara);
+                double ilogfac = atan2(temp.imag(), temp.real());
+                //double ilogfac = temp.imag()/temp.real();
+                cdouble clogfac{rlogfac, ilogfac};
 
                 for (size_t k=0;k<6;k++){
                     s_log_q_m[k] += clogfac*q_ms[ni][k][i];
                     s_log_q_c[k] += clogfac*q_cs[ni][k][i];
-                    s_mdv1_q_m[k] += mdv1*q_ms[ni][k][i];
-                    s_mdv1_q_c[k] += mdv1*q_cs[ni][k][i];
-                    s_mdv2_q_m[k] += mdv2*q_ms[ni][k][i];
                 }
-
-                for (size_t k=0;k<5;k++){
-                    s_mdv3_q_m[k] += mdv3*q_ms[ni][k][i];
-                    s_mdv2_q_c[k] += mdv2*q_cs[ni][k][i];
-                }
-
-                for (size_t k=0;k<3;k+=2){
-                    s_mdv4_q_m[k] += mdv4*q_ms[ni][k][i];
-                    s_mdv3_q_c[k] += mdv3*q_cs[ni][k][i];
-                }
-            }
-
-            for (size_t k=0;k<6;k++){
-                s_nmdv1_q_m[k] = s_dv1_q_m[k] - s_mdv1_q_m[k];
-                s_nmdv1_q_c[k] = s_dv1_q_c[k] - s_mdv1_q_c[k];
-                s_nmdv2_q_m[k] = s_dv2_q_m[k] - s_mdv2_q_m[k];
-            }
-
-            for (size_t k=0;k<5;k++){
-                s_nmdv3_q_m[k] = s_dv3_q_m[k] - s_mdv3_q_m[k];
-                s_nmdv2_q_c[k] = s_dv2_q_c[k] - s_mdv2_q_c[k];
-            }
-
-            for (size_t k=0;k<3;k+=2){
-                s_nmdv4_q_m[k] = s_dv4_q_m[k] - s_mdv4_q_m[k];
-                s_nmdv3_q_c[k] = s_dv3_q_c[k] - s_mdv3_q_c[k];
             }
 
             cdouble c00 = M_PI*2.0*wp*wp*wc*wc*n*n*iapb*iapb;
             XP[0][0][0][2]-=c00*apbmd*d*s_log_q_m[0];
-            XP[0][0][0][3]-=c00*(d*(s_mdv1_q_m[0] + s_log_q_c[0]) + apbmd*s_log_q_m[1]);
-            XP[0][0][0][4]-=c00*(-s_dv1_q_c[0] + s_mdv1_q_m[1] - 0.5*s_dv2_q_m[0] + s_log_q_c[1] - iapbmd*d*(s_nmdv1_q_c[0] + 0.5*s_nmdv2_q_m[0]));
+            XP[0][0][0][3]-=c00*(d*(s_dv1_q_m[0] + s_log_q_c[0]) + apbmd*s_log_q_m[1]);
+            XP[0][0][0][4]-=c00*(-s_dv1_q_c[0] + s_dv1_q_m[1] - 0.5*s_dv2_q_m[0] + s_log_q_c[1]);
 
             cdouble c01 = M_PI*2.0*wp*wp*n*wc*cdouble{0.0, 1.0}*iapb*iapb;
             XP[0][1][1][2]-=c01*apbmd*d*s_log_q_m[2];
-            XP[0][1][1][3]-=c01*(d*(s_mdv1_q_m[2] + s_log_q_c[2]) + apbmd*s_log_q_m[3]);
-            XP[0][1][1][4]-=c01*(-s_dv1_q_c[2] + s_mdv1_q_m[3] - 0.5*s_dv2_q_m[2] + s_log_q_c[3] - iapbmd*d*(s_nmdv1_q_c[2] + 0.5*s_nmdv2_q_m[2]));
+            XP[0][1][1][3]-=c01*(d*(s_dv1_q_m[2] + s_log_q_c[2]) + apbmd*s_log_q_m[3]);
+            XP[0][1][1][4]-=c01*(-s_dv1_q_c[2] + s_dv1_q_m[3] - 0.5*s_dv2_q_m[2] + s_log_q_c[3]);
 
             cdouble c02 = M_PI*2.0*wp*wp*n*wc*iapb*iapb;
             XP[0][2][1][1]-=c02*d*apbmd*apbmd*s_log_q_m[0];
-            XP[0][2][1][2]-=c02*apbmd*(d*s_mdv1_q_m[0] + d*s_log_q_c[0] + apbmd*s_log_q_m[1]);
-            XP[0][2][1][3]-=c02*(d*s_mdv1_q_c[0] + apbmd*s_mdv1_q_m[1] + 0.5*d*s_mdv2_q_m[0] + apbmd*s_log_q_c[1]);
-            XP[0][2][1][4]-=c02*(s_mdv1_q_c[1] - 0.5*s_dv2_q_c[0] + 0.5*s_mdv2_q_m[1] - (1.0/3.0)*s_dv3_q_m[0] - iapbmd*d*(1.0/3.0)*s_nmdv3_q_m[0] - iapbmd*d*0.5*s_nmdv2_q_c[0]);
+            XP[0][2][1][2]-=c02*apbmd*(d*s_dv1_q_m[0] + d*s_log_q_c[0] + apbmd*s_log_q_m[1]);
+            XP[0][2][1][3]-=c02*(d*s_dv1_q_c[0] + apbmd*s_dv1_q_m[1] + 0.5*d*s_dv2_q_m[0] + apbmd*s_log_q_c[1]);
+            XP[0][2][1][4]-=c02*(s_dv1_q_c[1] - 0.5*s_dv2_q_c[0] + 0.5*s_dv2_q_m[1] - (1.0/3.0)*s_dv3_q_m[0]);
 
             cdouble c10 = M_PI*2.0*wp*wp*n*wc*cdouble{0.0, -1.0}*iapb*iapb;
             XP[1][0][1][2]-=c10*apbmd*d*s_log_q_m[2];
-            XP[1][0][1][3]-=c10*(d*(s_mdv1_q_m[2] + s_log_q_c[2]) + apbmd*s_log_q_m[3]);
-            XP[1][0][1][4]-=c10*(-s_dv1_q_c[2] + s_mdv1_q_m[3] - 0.5*s_dv2_q_m[2] + s_log_q_c[3] - iapbmd*d*(s_nmdv1_q_c[2] + 0.5*s_nmdv2_q_m[2]));
+            XP[1][0][1][3]-=c10*(d*(s_dv1_q_m[2] + s_log_q_c[2]) + apbmd*s_log_q_m[3]);
+            XP[1][0][1][4]-=c10*(-s_dv1_q_c[2] + s_dv1_q_m[3] - 0.5*s_dv2_q_m[2] + s_log_q_c[3]);
 
             cdouble c11 = M_PI*2.0*wp*wp*iapb*iapb;
             XP[1][1][2][2]-=c11*apbmd*d*s_log_q_m[4];
-            XP[1][1][2][3]-=c11*(d*(s_mdv1_q_m[4] + s_log_q_c[4]) + apbmd*s_log_q_m[5]);
-            XP[1][1][2][4]-=c11*(-s_dv1_q_c[4] + s_mdv1_q_m[5] - 0.5*s_dv2_q_m[4] + s_log_q_c[5] - iapbmd*d*(s_nmdv1_q_c[4] + 0.5*s_nmdv2_q_m[4]));
+            XP[1][1][2][3]-=c11*(d*(s_dv1_q_m[4] + s_log_q_c[4]) + apbmd*s_log_q_m[5]);
+            XP[1][1][2][4]-=c11*(-s_dv1_q_c[4] + s_dv1_q_m[5] - 0.5*s_dv2_q_m[4] + s_log_q_c[5]);
 
             cdouble c12 = M_PI*2.0*wp*wp*cdouble{0.0, -1.0}*iapb*iapb;
             XP[1][2][2][1]-=c12*d*apbmd*apbmd*s_log_q_m[2];
-            XP[1][2][2][2]-=c12*apbmd*(d*s_mdv1_q_m[2] + d*s_log_q_c[2] + apbmd*s_log_q_m[3]);
-            XP[1][2][2][3]-=c12*(d*s_mdv1_q_c[2] + apbmd*s_mdv1_q_m[3] + 0.5*d*s_mdv2_q_m[2] + apbmd*s_log_q_c[3]);
-            XP[1][2][2][4]-=c12*(s_mdv1_q_c[3] - 0.5*s_dv2_q_c[2] + 0.5*s_mdv2_q_m[3] - (1.0/3.0)*s_dv3_q_m[2] - iapbmd*d*(1.0/3.0)*s_nmdv3_q_m[2] - iapbmd*d*0.5*s_nmdv2_q_c[2]);
+            XP[1][2][2][2]-=c12*apbmd*(d*s_dv1_q_m[2] + d*s_log_q_c[2] + apbmd*s_log_q_m[3]);
+            XP[1][2][2][3]-=c12*(d*s_dv1_q_c[2] + apbmd*s_dv1_q_m[3] + 0.5*d*s_dv2_q_m[2] + apbmd*s_log_q_c[3]);
+            XP[1][2][2][4]-=c12*(s_dv1_q_c[3] - 0.5*s_dv2_q_c[2] + 0.5*s_dv2_q_m[3] - (1.0/3.0)*s_dv3_q_m[2]);
 
             cdouble c20 = M_PI*2.0*wp*wp*n*wc*iapb*iapb;
             XP[2][0][1][1]-=c20*d*apbmd*apbmd*s_log_q_m[0];
-            XP[2][0][1][2]-=c20*apbmd*(d*s_mdv1_q_m[0] + d*s_log_q_c[0] + apbmd*s_log_q_m[1]);
-            XP[2][0][1][3]-=c20*(d*s_mdv1_q_c[0] + apbmd*s_mdv1_q_m[1] + 0.5*d*s_mdv2_q_m[0] + apbmd*s_log_q_c[1]);
-            XP[2][0][1][4]-=c20*(s_mdv1_q_c[1] - 0.5*s_dv2_q_c[0] + 0.5*s_mdv2_q_m[1] - (1.0/3.0)*s_dv3_q_m[0] - iapbmd*d*(1.0/3.0)*s_nmdv3_q_m[0] - iapbmd*d*0.5*s_nmdv2_q_c[0]);
+            XP[2][0][1][2]-=c20*apbmd*(d*s_dv1_q_m[0] + d*s_log_q_c[0] + apbmd*s_log_q_m[1]);
+            XP[2][0][1][3]-=c20*(d*s_dv1_q_c[0] + apbmd*s_dv1_q_m[1] + 0.5*d*s_dv2_q_m[0] + apbmd*s_log_q_c[1]);
+            XP[2][0][1][4]-=c20*(s_dv1_q_c[1] - 0.5*s_dv2_q_c[0] + 0.5*s_dv2_q_m[1] - (1.0/3.0)*s_dv3_q_m[0]);
 
             cdouble c21 = M_PI*2.0*wp*wp*cdouble{0.0, 1.0}*iapb*iapb;
             XP[2][1][2][1]-=c21*d*apbmd*apbmd*s_log_q_m[2];
-            XP[2][1][2][2]-=c21*apbmd*(d*s_mdv1_q_m[2] + d*s_log_q_c[2] + apbmd*s_log_q_m[3]);
-            XP[2][1][2][3]-=c21*(d*s_mdv1_q_c[2] + apbmd*s_mdv1_q_m[3] + 0.5*d*s_mdv2_q_m[2] + apbmd*s_log_q_c[3]);
-            XP[2][1][2][4]-=c21*(s_mdv1_q_c[3] - 0.5*s_dv2_q_c[2] + 0.5*s_mdv2_q_m[3] - (1.0/3.0)*s_dv3_q_m[2] - iapbmd*d*(1.0/3.0)*s_nmdv3_q_m[2] - iapbmd*d*0.5*s_nmdv2_q_c[2]);
+            XP[2][1][2][2]-=c21*apbmd*(d*s_dv1_q_m[2] + d*s_log_q_c[2] + apbmd*s_log_q_m[3]);
+            XP[2][1][2][3]-=c21*(d*s_dv1_q_c[2] + apbmd*s_dv1_q_m[3] + 0.5*d*s_dv2_q_m[2] + apbmd*s_log_q_c[3]);
+            XP[2][1][2][4]-=c21*(s_dv1_q_c[3] - 0.5*s_dv2_q_c[2] + 0.5*s_dv2_q_m[3] - (1.0/3.0)*s_dv3_q_m[2]);
 
             cdouble c22 = M_PI*2.0*wp*wp*iapb*iapb;
             XP[2][2][2][0]-=c22*apbmd*apbmd*apbmd*d*s_log_q_m[0];
-            XP[2][2][2][1]-=c22*(apbmd*apbmd*(apbmd*s_log_q_m[1] + d*(s_mdv1_q_m[0] + s_log_q_c[0])));
-            XP[2][2][2][2]-=c22*(apbmd*(apbmd*(s_mdv1_q_m[1] + s_log_q_c[1]) + d*s_mdv1_q_c[0] + 0.5*d*s_mdv2_q_m[0]));
-            XP[2][2][2][3]-=c22*(apbmd*(s_mdv1_q_c[1] + 0.5*s_mdv2_q_m[1]) + 0.5*d*s_mdv2_q_c[0] + (1.0/3.0)*d*s_mdv3_q_m[0]);
-            XP[2][2][2][4]+=c22*(iapbmd*d*0.25*s_nmdv4_q_m[0] + (1.0/3.0)*s_nmdv3_q_m[1] + iapbmd*(1.0/3.0)*s_nmdv3_q_c[0] + 0.5*s_nmdv2_q_c[1]);
+            XP[2][2][2][1]-=c22*(apbmd*apbmd*(apbmd*s_log_q_m[1] + d*(s_dv1_q_m[0] + s_log_q_c[0])));
+            XP[2][2][2][2]-=c22*(apbmd*(apbmd*(s_dv1_q_m[1] + s_log_q_c[1]) + d*s_dv1_q_c[0] + 0.5*d*s_dv2_q_m[0]));
+            XP[2][2][2][3]-=c22*(apbmd*(s_dv1_q_c[1] + 0.5*s_dv2_q_m[1]) + 0.5*d*s_dv2_q_c[0] + (1.0/3.0)*d*s_dv3_q_m[0]);
         }
 
         return XP;
@@ -482,7 +419,7 @@ public:
 
 
 
-BOOST_PYTHON_MODULE(libKineticDispersion){
+BOOST_PYTHON_MODULE(libSolver){
     p::class_<Solver>("Solver", p::init<const boost::python::list, double>())
             .def("push_kperp", &Solver::push_kperp)
             .def("push_kpara", &Solver::push_kpara)
