@@ -264,14 +264,9 @@ public://TODO: private later
 
             for (size_t i = 0; i < npara - 1; i++) {
                 //cdouble clogfac{log((apb - d - vpara_hp[i]*kpara)/(apb - d - vpara_hm[i]*kpara))};
-                //(apb - d - vpara_hp[i]*kpara)/(apb - d - vpara_hm[i]*kpara)
-                //(apb - d - vpara_hm[i]*kpara - dv1[i]*kpara)/(apb - d - vpara_hm[i]*kpara)
-                //1 - dv1[i]*kpara/(apb - d - vpara_hm[i]*kpara)
-                //1 - dv1[i]*kpara*dv1[i]*kpara/(apb - d - vpara_hm[i]*kpara)*(apb - d - vpara_hm[i]*kpara)
                 double advkm = a - d - vpara_hm[i] * kpara;
                 double rlogfac = 0.5 * log1p(dv1[i] * kpara * (dv1[i] * kpara - 2.0 * advkm) / (advkm * advkm + b2));
-                //double rlogfac = 0.5 * log1p(dv1[i] * kpara * dv1[i] * kpara / (advkm * advkm + b2));
-                cdouble temp = (apbmd - vpara_hp[i] * kpara) / (apbmd - vpara_hm[i] * kpara);
+                //cdouble temp = (apbmd - vpara_hp[i] * kpara) / (apbmd - vpara_hm[i] * kpara);
 
                 //Division by complex number...?
                 //(e + if) = (a + ib)/(c + id)
@@ -296,8 +291,9 @@ public://TODO: private later
                 //d = b
                 // b * dv1[i] * kpara/((a - d - (vpara_hm[i] + dv1[i]) * kpara)*(a - d - vpara_hm[i] * kpara) + b2)
                 //(a - d - (vpara_hm[i] + dv1[i]) * kpara)*(a - d - vpara_hm[i] * kpara)
-                //(advkm)*(advkm - 2*dv1[i]*kpara)
-                double ilogfac = atan2(temp.imag(), temp.real());
+                //b * dv1[i] * kpara/((advkm + dv1[i] * kpara)*advkm + b2)
+                //double ilogfac = atan2(temp.imag(), temp.real());
+                double ilogfac = atan(b * dv1[i] * kpara/((advkm + dv1[i] * kpara)*advkm + b2));
                 //double ilogfac = temp.imag()/temp.real();
                 cdouble clogfac{rlogfac, ilogfac};
 
