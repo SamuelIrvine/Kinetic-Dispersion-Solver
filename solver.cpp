@@ -289,11 +289,11 @@ public://TODO: private later
                 //b = b
                 //c = a - d - vpara_hm[i] * kpara
                 //d = b
-                // b * dv1[i] * kpara/((a - d - (vpara_hm[i] + dv1[i]) * kpara)*(a - d - vpara_hm[i] * kpara) + b2)
-                //(a - d - (vpara_hm[i] + dv1[i]) * kpara)*(a - d - vpara_hm[i] * kpara)
-                //b * dv1[i] * kpara/((advkm + dv1[i] * kpara)*advkm + b2)
+                //norm = 1.0/(b2 + advkm*advkm)
+                //e = (advkp*advkm + b2)*norm
+                //f = (b*dv1[i])*norm
                 //double ilogfac = atan2(temp.imag(), temp.real());
-                double ilogfac = atan(b * dv1[i] * kpara/((advkm + dv1[i] * kpara)*advkm + b2));
+                double ilogfac = atan2(b*dv1[i], (advkm + dv1[i]*kpara)*advkm + b2);
                 //double ilogfac = temp.imag()/temp.real();
                 cdouble clogfac{rlogfac, ilogfac};
 
