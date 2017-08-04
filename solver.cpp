@@ -293,7 +293,7 @@ public://TODO: private later
                 //e = (advkp*advkm + b2)*norm
                 //f = (b*dv1[i])*norm
                 //double ilogfac = atan2(temp.imag(), temp.real());
-                double ilogfac = atan2(b*dv1[i], (advkm + dv1[i]*kpara)*advkm + b2);
+                double ilogfac = atan2(-b*dv1[i], (advkm + dv1[i]*kpara)*advkm + b2);
                 //double ilogfac = temp.imag()/temp.real();
                 cdouble clogfac{rlogfac, ilogfac};
 
