@@ -270,30 +270,19 @@ public://TODO: private later
 
                 //Division by complex number...?
                 //(e + if) = (a + ib)/(c + id)
-                //(e + if)*(c + id) = a + ib
-                //e*c - f*d + ifc + ide = a + ib
-                //e*c - f*d = a
-                //f*c + d*e = b
-                //a, b, c, d are known, e, f are not
-                //e = (a + f*d)/c
-                //f = (b - d*e)/c
-                //e = (a + d*(b - de)/c)/c
-                //e*c*c + d*d*e = a*c + d*b
                 //e = (a*c + b*d)/(d*d + c*c)
-                //f = (b - d*(a + f*d)/c)/c
-                //f*c*c + d*d*f = b*c - d*a
                 //f = (b*c - d*a)/(d*d + c*c)
-                //taylor expand arctan2(f, e)
-                //Gives: ~ (b*c - d*a)/(a*c + b*d)
+                //----- Validated ----
                 //a = a - d - vpara_hp[i] * kpara
                 //b = b
                 //c = a - d - vpara_hm[i] * kpara
                 //d = b
+
                 //norm = 1.0/(b2 + advkm*advkm)
                 //e = (advkp*advkm + b2)*norm
                 //f = (b*dv1[i])*norm
                 //double ilogfac = atan2(temp.imag(), temp.real());
-                double ilogfac = atan2(-b*dv1[i], (advkm + dv1[i]*kpara)*advkm + b2);
+                double ilogfac = atan2(b*dv1[i], (advkm + dv1[i]*kpara)*advkm + b2);
                 //double ilogfac = temp.imag()/temp.real();
                 cdouble clogfac{rlogfac, ilogfac};
 
