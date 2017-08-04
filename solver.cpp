@@ -269,8 +269,8 @@ public://TODO: private later
                 //1 - dv1[i]*kpara/(apb - d - vpara_hm[i]*kpara)
                 //1 - dv1[i]*kpara*dv1[i]*kpara/(apb - d - vpara_hm[i]*kpara)*(apb - d - vpara_hm[i]*kpara)
                 double advkm = a - d - vpara_hm[i] * kpara;
-                //double rlogfac = 0.5 * log1p(dv1[i] * kpara * (dv1[i] * kpara - 2.0 * advkm) / (advkm * advkm + b2));
-                double rlogfac = 0.5 * log1p(dv1[i] * kpara * dv1[i] * kpara / (advkm * advkm + b2));
+                double rlogfac = 0.5 * log1p(dv1[i] * kpara * (dv1[i] * kpara - 2.0 * advkm) / (advkm * advkm + b2));
+                //double rlogfac = 0.5 * log1p(dv1[i] * kpara * dv1[i] * kpara / (advkm * advkm + b2));
                 cdouble temp = (apbmd - vpara_hp[i] * kpara) / (apbmd - vpara_hm[i] * kpara);
 
                 //Division by complex number...?
