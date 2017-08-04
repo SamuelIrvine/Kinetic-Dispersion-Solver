@@ -264,10 +264,39 @@ public://TODO: private later
 
             for (size_t i = 0; i < npara - 1; i++) {
                 //cdouble clogfac{log((apb - d - vpara_hp[i]*kpara)/(apb - d - vpara_hm[i]*kpara))};
-
+                //(apb - d - vpara_hp[i]*kpara)/(apb - d - vpara_hm[i]*kpara)
+                //(apb - d - vpara_hm[i]*kpara - dv1[i]*kpara)/(apb - d - vpara_hm[i]*kpara)
+                //1 - dv1[i]*kpara/(apb - d - vpara_hm[i]*kpara)
+                //1 - dv1[i]*kpara*dv1[i]*kpara/(apb - d - vpara_hm[i]*kpara)*(apb - d - vpara_hm[i]*kpara)
                 double advkm = a - d - vpara_hm[i] * kpara;
-                double rlogfac = 0.5 * log1p(dv1[i] * kpara * (dv1[i] * kpara - 2.0 * advkm) / (advkm * advkm + b2));
-                cdouble temp = (apb - d - vpara_hp[i] * kpara) / (apb - d - vpara_hm[i] * kpara);
+                //double rlogfac = 0.5 * log1p(dv1[i] * kpara * (dv1[i] * kpara - 2.0 * advkm) / (advkm * advkm + b2));
+                double rlogfac = 0.5 * log1p(dv1[i] * kpara * dv1[i] * kpara / (advkm * advkm + b2));
+                cdouble temp = (apbmd - vpara_hp[i] * kpara) / (apbmd - vpara_hm[i] * kpara);
+
+                //Division by complex number...?
+                //(e + if) = (a + ib)/(c + id)
+                //(e + if)*(c + id) = a + ib
+                //e*c - f*d + ifc + ide = a + ib
+                //e*c - f*d = a
+                //f*c + d*e = b
+                //a, b, c, d are known, e, f are not
+                //e = (a + f*d)/c
+                //f = (b - d*e)/c
+                //e = (a + d*(b - de)/c)/c
+                //e*c*c + d*d*e = a*c + d*b
+                //e = (a*c + b*d)/(d*d + c*c)
+                //f = (b - d*(a + f*d)/c)/c
+                //f*c*c + d*d*f = b*c - d*a
+                //f = (b*c - d*a)/(d*d + c*c)
+                //taylor expand arctan2(f, e)
+                //Gives: ~ (b*c - d*a)/(a*c + b*d)
+                //a = a - d - vpara_hp[i] * kpara
+                //b = b
+                //c = a - d - vpara_hm[i] * kpara
+                //d = b
+                // b * dv1[i] * kpara/((a - d - (vpara_hm[i] + dv1[i]) * kpara)*(a - d - vpara_hm[i] * kpara) + b2)
+                //(a - d - (vpara_hm[i] + dv1[i]) * kpara)*(a - d - vpara_hm[i] * kpara)
+                //(advkm)*(advkm - 2*dv1[i]*kpara)
                 double ilogfac = atan2(temp.imag(), temp.real());
                 //double ilogfac = temp.imag()/temp.real();
                 cdouble clogfac{rlogfac, ilogfac};
