@@ -282,7 +282,7 @@ public://TODO: private later
                 //e = (advkp*advkm + b2)*norm
                 //f = (b*dv1[i])*norm
                 //double ilogfac = atan2(temp.imag(), temp.real());
-                double ilogfac = atan2(b*dv1[i], (advkm + dv1[i]*kpara)*advkm + b2);
+                double ilogfac = atan2(b*dv1[i]*kpara, (advkm + dv1[i]*kpara)*advkm + b2);
                 //double ilogfac = temp.imag()/temp.real();
                 cdouble clogfac{rlogfac, ilogfac};
 
@@ -290,6 +290,10 @@ public://TODO: private later
                     s_log_q_m[k] += clogfac * q_ms[ni][k][i];
                     s_log_q_c[k] += clogfac * q_cs[ni][k][i];
                 }
+
+                //What about computing log terms for expanded distribution???
+                //Store alot of coefficients to high order
+                //expand 1/(a + ib + c*x + d*x + c*y) ---> a terms should be on nominator
             }
 
             cdouble c00 = M_PI * 2.0 * wp * wp * wc * wc * n * n * iapb * iapb;
