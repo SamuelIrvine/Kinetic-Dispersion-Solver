@@ -2602,6 +2602,30 @@ public:
         return detM;
     }
 
+    np::ndarray marginalize(const np::ndarray &arr) {
+        int nd = arr.get_nd();
+        Py_intptr_t const *shape = arr.get_shape();
+        Py_intptr_t const *stride = arr.get_strides();
+        np::ndarray result = np::zeros(nd, shape, arr.get_dtype());
+        if (nd == 1) {
+            for (size_t i = 0; i < (size_t) shape[0]; i++) {
+                cdouble w = *reinterpret_cast<cdouble const *>(arr.get_data() + i * stride[0]);
+                cdouble res = evaluate(w.real(), w.imag());
+                *reinterpret_cast<cdouble *>(result.get_data() + i * stride[0]) = res;
+            }
+        } else if (nd == 2) {
+            for (size_t i = 0; i < (size_t) shape[0]; i++) {
+                for (size_t j = 0; j < (size_t) shape[1]; j++) {
+                    cdouble w = *reinterpret_cast<cdouble const *>(arr.get_data() + i * stride[0] + j * stride[1]);
+                    cdouble res = evaluate(w.real(), w.imag());
+                    *reinterpret_cast<cdouble *>(result.get_data() + i * stride[0] + j * stride[1]) = res;
+                }
+            }
+        } else
+            throw std::runtime_error("Unsupported marginalization dimensionality. ");
+        return result;
+    }
+
 };
 
 
@@ -2609,6 +2633,7 @@ BOOST_PYTHON_MODULE (libSolver) {
     p::class_<Solver>("Solver", p::init<const boost::python::list, double>())
             .def("push_kperp", &Solver::push_kperp)
             .def("push_kpara", &Solver::push_kpara)
-            .def("evaluate", &Solver::evaluate);
+            .def("evaluate", &Solver::evaluate)
+            .def("marginalize", &Solver::marginalize);
 
 }
