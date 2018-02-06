@@ -822,6 +822,7 @@ public://TODO: private later
         for (size_t i=0;i < nperp_h ; i++){
             for (size_t j=0;j<npara_h;j++){
                 gamma[i][j] = sqrt(1.0 + pow(pperp_h[i]/(cl*mass), 2) + pow(ppara_h[j]/(cl*mass), 2));
+                gamma[i][j] = 1.0;
                 vpara_h[i][j] = ppara_h[j] / (gamma[i][j]*mass);
                 df_dpperp_h[i][j]/=sum;
                 df_dppara_h[i][j]/=sum;
