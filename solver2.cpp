@@ -483,9 +483,9 @@ private:
                 
         t.p1 = logfac_a1 * ((-cg0_2 + cg1_2) * R1*0.5) +
                 logfac_a1_2 * ((-cg0 * R0 + cg1 * R0 + cg0 * mg0 * R1 - cg1 * mg1 * R1)) -
-                logfac_a1_3 * ((mg0 - mg1) * (-2 * R0 + (mg0 + mg1) * R1))*0.5 +
+                logfac_a1_3 * (((mg0 - mg1) * (-2 * R0 + (mg0 + mg1) * R1))*0.5) +
                 o1_a1 * ((x0 - x1) * (4 * cg0 * (R0 - mg0 * R1) - 4 * cg1 * (R0 - mg1 * R1) - (mg0 - mg1) * (-2 * R0 + (mg0 + mg1) * R1) * (x0 + x1)))*0.25 +
-                o1_a1_2 * ((mg0 - mg1) * (-2 * R0 + (mg0 + mg1) * R1) * (x0 - x1))*0.5;
+                o1_a1_2 * (((mg0 - mg1) * (-2 * R0 + (mg0 + mg1) * R1) * (x0 - x1))*0.5);
 
         t.p2 = logfac_a1 * ((cg0_3 - cg1_3) * R1_2*(1.0/3.0)) +
                 logfac_a1_2 * (R1 * (cg0_2 * (R0 - mg0 * R1) + cg1_2 * (-R0 + mg1 * R1))) +
@@ -514,8 +514,8 @@ private:
                 2 * (-3 + mg0_2 + mg0 * mg1 + mg1_2) * R0 * R1 + 3 * (mg0 + mg1) * R1_2)*(1.0/6.0)) +
                 logfac_a1_3 * (-cg0 * (mg0 * R0 + R1) * (-R0 + mg0 * R1) +
                 cg1 * (mg1 * R0 + R1) * (-R0 + mg1 * R1)) +
-                logfac_a1_2 * (cg1_2 * (R0_2 - 2 * mg1 * R0 * R1 - R1_2) +
-                cg0_2 * (-R0_2 + 2 * mg0 * R0 * R1 + R1_2))*0.5 +
+                logfac_a1_2 * ((cg1_2 * (R0_2 - 2 * mg1 * R0 * R1 - R1_2) +
+                cg0_2 * (-R0_2 + 2 * mg0 * R0 * R1 + R1_2))*0.5) +
                 o1_a1_3 * (- ((mg0 - mg1) * (-3 * (mg0 + mg1) * R0_2 +
                 2 * (-3 + mg0_2 + mg0 * mg1 + mg1_2) * R0 * R1 + 3 * (mg0 + mg1) * R1_2) * (x0 -
                 x1)) * (1.0/6.0)) +
@@ -2598,6 +2598,8 @@ public:
         detM +=-X[0][1]*X[1][0]*X[2][2];
         detM +=-X[1][1]*X[2][0]*X[0][2];
         detM +=-X[2][1]*X[0][0]*X[1][2];
+
+        detM = X[2][2];
 
 
         return detM;
