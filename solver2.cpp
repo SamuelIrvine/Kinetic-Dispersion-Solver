@@ -935,7 +935,6 @@ public://TODO: private later
             for (size_t ai=0;ai<n_taylor;ai++){
                 if (fabs(a_mins[k] + ai*das[k] + wr)<10*damaxs[k][ai]){
                     const int n = ns[k];
-                    continue;
                     //cout<<series.mapping[k].size()<<endl;
                     for (pair<size_t, size_t> p:series.mapping[k][ai]){
                         double z0, z1, z2, z3;
