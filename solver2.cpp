@@ -929,8 +929,6 @@ public://TODO: private later
     array<array<cdouble, 3>, 3> push_omega(const double kpara, const double wr, const double wi) {
         array<array<cdouble, 3>, 3> X;
         cdouble X00{0.0, 0.0}, X01{0.0, 0.0}, X02{0.0, 0.0}, X11{0.0, 0.0}, X12{0.0, 0.0}, X22{0.0, 0.0};
-//        cout<<1.0 + X[0][0]<<", "<<X[0][1]<<", "<<1.0 + X[1][1]<<", "<<1.0 + X[2][2]<<endl;
-//        cout<<X[0][0]<<", "<<X[0][1]<<", "<<X[1][1]<<", "<<X[2][2]<<endl;
         const cdouble w = wr + I*wi;
         const cdouble iw = 1.0/w;
         for (size_t k=0;k<ns.size();k++){
@@ -2600,8 +2598,6 @@ public:
         detM +=-X[0][1]*X[1][0]*X[2][2];
         detM +=-X[1][1]*X[2][0]*X[0][2];
         detM +=-X[2][1]*X[0][0]*X[1][2];
-
-        detM = X[2][2];
 
 
         return detM;
