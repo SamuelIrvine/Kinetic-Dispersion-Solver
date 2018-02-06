@@ -851,7 +851,7 @@ public://TODO: private later
 
     void push_kperp(const double kperp) {
         for (size_t i=0;i<nperp_h;i++){
-            z[i] = kperp*pperp_h[i]/wc0;
+            z[i] = kperp*pperp_h[i]/(wc0*mass);
         }
         for (size_t k=0;k<ns.size();k++){
             int n = ns[k];
