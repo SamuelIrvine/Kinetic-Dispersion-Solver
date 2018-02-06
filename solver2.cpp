@@ -910,17 +910,17 @@ public://TODO: private later
                     d = z3 - z0 - b - c;
                     series.pushDenominator(k, i, j, ai, a1, b, c, d);
                     series.accumulate(series.sX00a, U0, kp0[k], 1.0);
-                    series.accumulate(series.sX00b, U2, kp0[k], kpara);
+                    //series.accumulate(series.sX00b, U2, kp0[k], kpara);
                     series.accumulate(series.sX01a, U0, kp1[k], 1.0);
-                    series.accumulate(series.sX01b, U2, kp1[k], kpara);
+                    //series.accumulate(series.sX01b, U2, kp1[k], kpara);
                     series.accumulate(series.sX02a, U1, kp2[k], 1.0);
-                    series.accumulate(series.sX02b, U3, kp2[k], kpara);
+                    //series.accumulate(series.sX02b, U3, kp2[k], kpara);
                     series.accumulate(series.sX11a, U0, kp3[k], 1.0);
-                    series.accumulate(series.sX11b, U2, kp3[k], kpara);
+                    //series.accumulate(series.sX11b, U2, kp3[k], kpara);
                     series.accumulate(series.sX12a, U1, kp4[k], 1.0);
-                    series.accumulate(series.sX12b, U3, kp4[k], kpara);
+                    //series.accumulate(series.sX12b, U3, kp4[k], kpara);
                     series.accumulate(series.sX22a, W0, kp5[k], 1.0);
-                    series.accumulate(series.sX22b, W1, kp5[k], n);
+                    //series.accumulate(series.sX22b, W1, kp5[k], n);
                 }
             }
         }
