@@ -314,9 +314,10 @@ private:
         array<double, 2> Q0, Q1, Q2, Q4, Q5, Q6, Q7;
         cdouble a;
         double theta = atan2(a2, a1);
-        theta = 0.0;
         double R0 = cos(theta);
         double R1 = sin(theta);
+        R0 = 0.0;
+        R1 = 1.0;
         a = (R0 * a1 + R1 * a2) / a0;
         if (upper){
             Q0[0] = 1.0*R0 + 1.0*R1;
