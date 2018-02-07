@@ -570,11 +570,11 @@ private:
                 3 * (mg0 + mg1) * (-4 + mg0_2 + mg1_2) * R0 * R1_2 +
                 4 * (mg0_2 + mg0 * mg1 + mg1_2) * R1_3) * (x0_4 - x1_4)));
 
-        t.p6 = 0.0*logfac_a1 * ((cg0_3 - cg1_3) * R0_2*(1.0/3.0)) +
-                0.0*logfac_a1_4 * (-(1.0/3.0) * ((mg0 - mg1) * ((mg0_2 + mg0 * mg1 + mg1_2) * R0_2 +
+        t.p6 = logfac_a1 * ((cg0_3 - cg1_3) * R0_2*(1.0/3.0)) +
+                logfac_a1_4 * (-(1.0/3.0) * ((mg0 - mg1) * ((mg0_2 + mg0 * mg1 + mg1_2) * R0_2 +
                 3 * (mg0 + mg1) * R0 * R1 + 3 * R1_2))) +
-                0.0*logfac_a1_2 * (R0 * (-cg0_2 * (mg0 * R0 + R1) + cg1_2 * (mg1 * R0 + R1))) +
-                0.0*logfac_a1_3 * ((cg0 * (mg0 * R0 + R1) * (mg0 * R0 + R1) - cg1 * (mg1 * R0 + R1) * (mg1 * R0
+                logfac_a1_2 * (R0 * (-cg0_2 * (mg0 * R0 + R1) + cg1_2 * (mg1 * R0 + R1))) +
+                logfac_a1_3 * ((cg0 * (mg0 * R0 + R1) * (mg0 * R0 + R1) - cg1 * (mg1 * R0 + R1) * (mg1 * R0
                 + R1))) +
                 o1_a1_3 * (((mg0 - mg1) * ((mg0_2 + mg0 * mg1 + mg1_2) * R0_2 + 3 * (mg0 + mg1) * R0 * R1 +
                 3 * R1_2) * (x0 - x1)) * (1.0/3.0)) +
@@ -582,7 +582,7 @@ private:
                 6 * cg1 * (mg1 * R0 + R1) * (mg1 * R0 + R1) + (mg0 -
                 mg1) * ((mg0_2 + mg0 * mg1 + mg1_2) * R0_2 + 3 * (mg0 + mg1) * R0 * R1 +
                 3 * R1_2) * (x0 + x1))) +
-                (o1_a1) * ((1.0/18.0) * (x0 - x1) * (18 * cg0_2 * R0 * (mg0 * R0 + R1) -
+                o1_a1 * ((1.0/18.0) * (x0 - x1) * (18 * cg0_2 * R0 * (mg0 * R0 + R1) -
                 18 * cg1_2 * R0 * (mg1 * R0 + R1) + 9 * cg0 * (mg0 * R0 + R1)*(mg0 * R0 + R1) * (x0 + x1) -
                 9 * cg1 * (mg1 * R0 + R1) * (mg1 * R0 + R1) * (x0 + x1) +
                 2 * (mg0 - mg1) * ((mg0_2 + mg0 * mg1 + mg1_2) * R0_2 +
@@ -978,15 +978,15 @@ public://TODO: private later
                 X22+=series.evaluate(series.sX22b)*iw;
             }
         }
-        X[0][0] = X00*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[0][1] = I*X01*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[0][2] = X02*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[1][0] = -I*X01*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[1][1] = X11*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[1][2] = I*X12*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[2][0] = -X02*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[2][1] = -I*X12*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[2][2] = X22*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[0][0] = 0.0*X00*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[0][1] = 0.0*I*X01*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[0][2] = 0.0*X02*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[1][0] = 0.0*-I*X01*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[1][1] = 0.0*X11*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[1][2] = 0.0*I*X12*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[2][0] = 0.0*-X02*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[2][1] = 0.0*-I*X12*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[2][2] = 0.0*X22*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
 //        cout<<1.0 + X[0][0]<<", "<<X[0][1]<<", "<<1.0 + X[1][1]<<", "<<1.0 + X[2][2]<<endl;
 //        cout<<X[0][0]<<", "<<X[0][1]<<", "<<X[1][1]<<", "<<X[2][2]<<endl;
         return X;
