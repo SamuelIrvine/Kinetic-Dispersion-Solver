@@ -301,7 +301,7 @@ private:
 
     cdouble evaluate(const double c0, const double c1, const double c2, const double c3, const double c4,
                      const double c5, const double c6, const double c7, const double c8, const Triangle &t){
-        return c0*t.p0 + c1*t.p1 + c2*t.p2 + c3*t.p3 + c4*t.p4 + c5*t.p5 + c6*t.p6 + c7*t.p7 + c8*t.p8;
+        return c0*t.p0 + c1*t.p1 + c2*t.p2 + c3*t.p3 + c4*t.p4 + c5*t.p5 + c6*t.p6 + 0.0*c7*t.p7 + 0.0*c8*t.p8;
     }
 
     static array<double, 2> intersect(const array<double, 2> &P1, const array<double, 2> &P2, const double x){
@@ -576,13 +576,13 @@ private:
                 logfac_a1_2 * (R0 * (-cg0_2 * (mg0 * R0 + R1) + cg1_2 * (mg1 * R0 + R1))) +
                 logfac_a1_3 * ((cg0 * (mg0 * R0 + R1) * (mg0 * R0 + R1) - cg1 * (mg1 * R0 + R1) * (mg1 * R0
                 + R1))) +
-                o1_a1_3 * (((mg0 - mg1) * ((mg0_2 + mg0 * mg1 + mg1_2) * R0_2 + 3 * (mg0 + mg1) * R0 * R1 +
+                0.0*o1_a1_3 * (((mg0 - mg1) * ((mg0_2 + mg0 * mg1 + mg1_2) * R0_2 + 3 * (mg0 + mg1) * R0 * R1 +
                 3 * R1_2) * (x0 - x1)) * (1.0/3.0)) +
-                o1_a1_2 * (- (1.0/6.0) * (x0 - x1) * (6 * cg0 * (mg0 * R0 + R1) * (mg0 * R0 + R1) -
+                0.0*o1_a1_2 * (- (1.0/6.0) * (x0 - x1) * (6 * cg0 * (mg0 * R0 + R1) * (mg0 * R0 + R1) -
                 6 * cg1 * (mg1 * R0 + R1) * (mg1 * R0 + R1) + (mg0 -
                 mg1) * ((mg0_2 + mg0 * mg1 + mg1_2) * R0_2 + 3 * (mg0 + mg1) * R0 * R1 +
                 3 * R1_2) * (x0 + x1))) +
-                (o1_a1) * ((1.0/18.0) * (x0 - x1) * (18 * cg0_2 * R0 * (mg0 * R0 + R1) -
+                0.0*(o1_a1) * ((1.0/18.0) * (x0 - x1) * (18 * cg0_2 * R0 * (mg0 * R0 + R1) -
                 18 * cg1_2 * R0 * (mg1 * R0 + R1) + 9 * cg0 * (mg0 * R0 + R1)*(mg0 * R0 + R1) * (x0 + x1) -
                 9 * cg1 * (mg1 * R0 + R1) * (mg1 * R0 + R1) * (x0 + x1) +
                 2 * (mg0 - mg1) * ((mg0_2 + mg0 * mg1 + mg1_2) * R0_2 +
@@ -878,7 +878,7 @@ public://TODO: private later
             double a_min{DBL_MAX}, a_max{DBL_MIN}, da;
             for (size_t i = 0; i < nperp_g + 1; i++) {
                 for (size_t j = 0; j < npara_g + 1; j++) {
-                    double a = -0.0*kpara*vpara_h[i*2][j*2] - n*gamma[i*2][j*2]*wc0;
+                    double a = -kpara*vpara_h[i*2][j*2] - n*gamma[i*2][j*2]*wc0;
                     if (a>a_max){
                         a_max = a;
                     }
@@ -895,10 +895,10 @@ public://TODO: private later
                 for (size_t j = 0; j < npara_g; j++) {
                     double a, a0, a1, b, c, d, z0, z1, z2, z3, damax;
                     size_t ai;
-                    z0 = -0.0*kpara*vpara_h[i*2][j*2] - n*gamma[i*2][j*2]*wc0;
-                    z1 = -0.0*kpara*vpara_h[i*2][j*2+2] - n*gamma[i*2][j*2+2]*wc0;
-                    z2 = -0.0*kpara*vpara_h[i*2+2][j*2] - n*gamma[i*2+2][j*2]*wc0;
-                    z3 = -0.0*kpara*vpara_h[i*2+2][j*2+2] - n*gamma[i*2+2][j*2+2]*wc0;
+                    z0 = -kpara*vpara_h[i*2][j*2] - n*gamma[i*2][j*2]*wc0;
+                    z1 = -kpara*vpara_h[i*2][j*2+2] - n*gamma[i*2][j*2+2]*wc0;
+                    z2 = -kpara*vpara_h[i*2+2][j*2] - n*gamma[i*2+2][j*2]*wc0;
+                    z3 = -kpara*vpara_h[i*2+2][j*2+2] - n*gamma[i*2+2][j*2+2]*wc0;
                     a = 0.25*(z0+z1+z2+z3);
                     ai = (size_t)((a - a_min)/da);
                     a0 = ai*da + a_min;
@@ -939,10 +939,10 @@ public://TODO: private later
                     for (pair<size_t, size_t> p:series.mapping[k][ai]){
                         double z0, z1, z2, z3;
                         size_t i{p.first}, j{p.second};
-                        z0 = wr -0.0*kpara*vpara_h[i*2][j*2] - n*gamma[i*2][j*2]*wc0;
-                        z1 = wr -0.0*kpara*vpara_h[i*2][j*2+2] - n*gamma[i*2][j*2+2]*wc0;
-                        z2 = wr -0.0*kpara*vpara_h[i*2+2][j*2] - n*gamma[i*2+2][j*2]*wc0;
-                        z3 = wr -0.0*kpara*vpara_h[i*2+2][j*2+2] - n*gamma[i*2+2][j*2+2]*wc0;
+                        z0 = wr -kpara*vpara_h[i*2][j*2] - n*gamma[i*2][j*2]*wc0;
+                        z1 = wr -kpara*vpara_h[i*2][j*2+2] - n*gamma[i*2][j*2+2]*wc0;
+                        z2 = wr -kpara*vpara_h[i*2+2][j*2] - n*gamma[i*2+2][j*2]*wc0;
+                        z3 = wr -kpara*vpara_h[i*2+2][j*2+2] - n*gamma[i*2+2][j*2+2]*wc0;
 
                         TriangleIntegrator integrator;
                         integrator.pushTriangles(wi, z0, z1, z2, z3);
