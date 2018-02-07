@@ -286,6 +286,8 @@ public:
         a5 = z3 - z1;
         a3 = z3 - a4 - a5 + I*wi;
 
+        cout<<a0<<", "<<a1<<", "<<a2<<", "<<a3<<", "<<a4<<", "<<a5<<endl;
+
         //a0 = z0
         //a0 + a1 = z1
         //a0 + a2 = z2
@@ -906,7 +908,7 @@ public://TODO: private later
                     z2 = -kpara*vpara_h[i*2+2][j*2] - n*gamma[i*2+2][j*2]*wc0;
                     z3 = -kpara*vpara_h[i*2+2][j*2+2] - n*gamma[i*2+2][j*2+2]*wc0;
                     a = 0.25*(z0+z1+z2+z3);
-                    ai = (size_t)((a - a_min)/da);
+                    ai = (size_t)((a - a_min)/da + 0.5);
                     a0 = ai*da + a_min;
                     damax = max(max(fabs(z0 - a0), fabs(z1 - a0)), max(fabs(z2 - a0), fabs(z3 - a0)));
                     damaxs[k][ai] = max(damaxs[k][ai], damax);
