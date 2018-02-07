@@ -301,7 +301,7 @@ private:
 
     cdouble evaluate(const double c0, const double c1, const double c2, const double c3, const double c4,
                      const double c5, const double c6, const double c7, const double c8, const Triangle &t){
-        return c0*t.p0 + c1*t.p1 + c2*t.p2 + c3*t.p3 + c4*t.p4 + c5*t.p5 + 0.0*c6*t.p6 + 0.0*c7*t.p7 + c8*t.p8;
+        return c0*t.p0 + c1*t.p1 + c2*t.p2 + c3*t.p3 + c4*t.p4 + c5*t.p5 + 0.0*c6*t.p6 + c7*t.p7 + c8*t.p8;
     }
 
     static array<double, 2> intersect(const array<double, 2> &P1, const array<double, 2> &P2, const double x){
