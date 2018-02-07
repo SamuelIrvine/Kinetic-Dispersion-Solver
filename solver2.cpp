@@ -399,7 +399,7 @@ private:
             t.p0 = t.p1 = t.p2 = t.p3 = t.p4 = t.p5 = t.p6 = t.p7 = t.p8 = 0.0;
         }else{
             cdouble atest = a1.real();
-            atest = atest+I*fabs(a1.imag());
+            atest = atest-I*fabs(a1.imag());
             computeTriangleIntegral(mg0, mg1, cg0, cg1, x0, x1, R0, R1, a1, t);
             cdouble a0i = 1.0/a0;
             t.p0*=a0i;
