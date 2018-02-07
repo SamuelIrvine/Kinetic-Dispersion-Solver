@@ -400,7 +400,7 @@ private:
         }else{
             cdouble atest = a1.real();
             atest = atest-I*fabs(a1.imag());
-            computeTriangleIntegral(mg0, mg1, cg0, cg1, x0, x1, R0, R1, a1, t);
+            computeTriangleIntegral(mg0, mg1, cg0, cg1, x0, x1, R0, R1, atest, t);
             cdouble a0i = 1.0/a0;
             t.p0*=a0i;
             t.p1*=a0i;
