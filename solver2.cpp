@@ -301,7 +301,7 @@ private:
 
     cdouble evaluate(const double c0, const double c1, const double c2, const double c3, const double c4,
                      const double c5, const double c6, const double c7, const double c8, const Triangle &t){
-        return c0*t.p0 + c1*t.p1 + c2*t.p2 + c3*t.p3 + c4*t.p4 + c5*t.p5 + c6*t.p6 + 0.0*c7*t.p7 + 0.0*c8*t.p8;
+        return c0*t.p0 + c1*t.p1 + c2*t.p2 + c3*t.p3 + c4*t.p4 + c5*t.p5 + c6*t.p6 + c7*t.p7 + c8*t.p8;
     }
 
     static array<double, 2> intersect(const array<double, 2> &P1, const array<double, 2> &P2, const double x){
@@ -858,9 +858,9 @@ public://TODO: private later
             for (size_t i=0;i<nperp_h;i++) {
                 jns[k][i] = bm::cyl_bessel_j(n, z[i]);
                 jnds[k][i] = bm::cyl_bessel_j_prime(n, z[i]);
-                kp0[k][i] = n*n*jns[k][i]*jns[k][i]*pperp_h[i]*pperp_h[i]/(z[i]*z[i]);
-                kp1[k][i] = n*jns[k][i]*jnds[k][i]*pperp_h[i]*pperp_h[i]/z[i];
-                kp2[k][i] = n*jns[k][i]*jns[k][i]*pperp_h[i]/z[i];
+                kp0[k][i] = n*n*jns[k][i]*jns[k][i]*(wc0*mass*wc0*mass/(kperp*kperp));
+                kp1[k][i] = n*jns[k][i]*jnds[k][i]*pperp_h[i]*(wc0*mass/(kperp));
+                kp2[k][i] = n*jns[k][i]*jns[k][i]*(wc0*mass/(kperp));
                 kp3[k][i] = jnds[k][i]*jnds[k][i]*pperp_h[i]*pperp_h[i];
                 kp4[k][i] = n*jns[k][i]*jnds[k][i]*pperp_h[i];
                 kp5[k][i] = jns[k][i]*jns[k][i];
@@ -978,15 +978,15 @@ public://TODO: private later
                 X22+=series.evaluate(series.sX22b)*iw;
             }
         }
-        X[0][0] = 0.0*X00*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[0][1] = 0.0*I*X01*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[0][2] = 0.0*X02*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[1][0] = 0.0*-I*X01*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[1][1] = 0.0*X11*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[1][2] = 0.0*I*X12*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[2][0] = 0.0*-X02*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[2][1] = 0.0*-I*X12*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[2][2] = 0.0*X22*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[0][0] = X00*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[0][1] = I*X01*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[0][2] = X02*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[1][0] = -I*X01*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[1][1] = X11*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[1][2] = I*X12*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[2][0] = -X02*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[2][1] = -I*X12*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[2][2] = X22*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
 //        cout<<1.0 + X[0][0]<<", "<<X[0][1]<<", "<<1.0 + X[1][1]<<", "<<1.0 + X[2][2]<<endl;
 //        cout<<X[0][0]<<", "<<X[0][1]<<", "<<X[1][1]<<", "<<X[2][2]<<endl;
         return X;
