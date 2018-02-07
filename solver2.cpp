@@ -287,6 +287,7 @@ public:
         a3 = z3 - a4 - a5 + I*wi;
 
         setupHalfTriangles(a0, a1, a2, false);
+        setupHalfTriangles(a0, a1, a2, true);
         //setupHalfTriangles(a3, a4, a5, true);
     }
 
