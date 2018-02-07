@@ -948,34 +948,34 @@ public://TODO: private later
                         integrator.pushTriangles(wi, z0, z1, z2, z3);
 
                         X00 += integrator.evaluate(i, j, U0, kp0[k], 1.0);
-                        X00 += integrator.evaluate(i, j, U2, kp0[k], kpara)*iw;
+                        //X00 += integrator.evaluate(i, j, U2, kp0[k], kpara)*iw;
                         X01 += integrator.evaluate(i, j, U0, kp1[k], 1.0);
-                        X01 += integrator.evaluate(i, j, U2, kp1[k], kpara)*iw;
+                        //X01 += integrator.evaluate(i, j, U2, kp1[k], kpara)*iw;
                         X02 += integrator.evaluate(i, j, U1, kp2[k], 1.0);
-                        X02 += integrator.evaluate(i, j, U3, kp2[k], kpara)*iw;
+                        //X02 += integrator.evaluate(i, j, U3, kp2[k], kpara)*iw;
                         X11 += integrator.evaluate(i, j, U0, kp3[k], 1.0);
-                        X11 += integrator.evaluate(i, j, U2, kp3[k], kpara)*iw;
+                        //X11 += integrator.evaluate(i, j, U2, kp3[k], kpara)*iw;
                         X12 += integrator.evaluate(i, j, U1, kp4[k], 1.0);
-                        X12 += integrator.evaluate(i, j, U3, kp4[k], kpara)*iw;
+                        //X12 += integrator.evaluate(i, j, U3, kp4[k], kpara)*iw;
                         X22 += integrator.evaluate(i, j, W0, kp5[k], 1.0);
-                        X22 += integrator.evaluate(i, j, W1, kp5[k], n)*iw;
+                        //X22 += integrator.evaluate(i, j, W1, kp5[k], n)*iw;
                     }
                     continue;
                 }
 
                 series.pushW(w, k, ai);
                 X00+=series.evaluate(series.sX00a);
-                X00+=series.evaluate(series.sX00b)*iw;
+                //X00+=series.evaluate(series.sX00b)*iw;
                 X01+=series.evaluate(series.sX01a);
-                X01+=series.evaluate(series.sX01b)*iw;
+                //X01+=series.evaluate(series.sX01b)*iw;
                 X02+=series.evaluate(series.sX02a);
-                X02+=series.evaluate(series.sX02b)*iw;
+                //X02+=series.evaluate(series.sX02b)*iw;
                 X11+=series.evaluate(series.sX11a);
-                X11+=series.evaluate(series.sX11b)*iw;
+                //X11+=series.evaluate(series.sX11b)*iw;
                 X12+=series.evaluate(series.sX12a);
-                X12+=series.evaluate(series.sX12b)*iw;
+                //X12+=series.evaluate(series.sX12b)*iw;
                 X22+=series.evaluate(series.sX22a);
-                X22+=series.evaluate(series.sX22b)*iw;
+                //X22+=series.evaluate(series.sX22b)*iw;
             }
         }
         X[0][0] = X00*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
