@@ -286,8 +286,6 @@ public:
         a5 = z3 - z1;
         a3 = z3 - a4 - a5 + I*wi;
 
-        cout<<a0<<", "<<a1<<", "<<a2<<", "<<a3<<", "<<a4<<", "<<a5<<endl;
-
         //a0 = z0
         //a0 + a1 = z1
         //a0 + a2 = z2
@@ -320,10 +318,11 @@ private:
     void setupHalfTriangles(const cdouble a0, const double a1, const double a2, const bool upper){
         array<double, 2> Q0, Q1, Q2, Q4, Q5, Q6, Q7;
         cdouble a;
-        double theta = atan2(a2, a1);
+        double theta = atan2(a2, -a1);
         double R0 = cos(theta);
         double R1 = sin(theta);
         a = (R0 * a1 + R1 * a2) / a0;
+        cout<<R0<<", "<<R1<<endl;
         if (upper){
             Q0[0] = 1.0*R0 + 1.0*R1;
             Q0[1] = 1.0*-R1 + 1.0*R0;
@@ -995,8 +994,8 @@ public://TODO: private later
         X[2][0] = -X02*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[2][1] = -I*X12*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[2][2] = X22*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-//        cout<<1.0 + X[0][0]<<", "<<X[0][1]<<", "<<1.0 + X[1][1]<<", "<<1.0 + X[2][2]<<endl;
-//        cout<<X[0][0]<<", "<<X[0][1]<<", "<<X[1][1]<<", "<<X[2][2]<<endl;
+        cout<<1.0 + X[0][0]<<", "<<X[0][1]<<", "<<1.0 + X[1][1]<<", "<<1.0 + X[2][2]<<endl;
+        cout<<X[0][0]<<", "<<X[0][1]<<", "<<X[1][1]<<", "<<X[2][2]<<endl;
         return X;
     }
 };
