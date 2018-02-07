@@ -301,7 +301,7 @@ private:
 
     cdouble evaluate(const double c0, const double c1, const double c2, const double c3, const double c4,
                      const double c5, const double c6, const double c7, const double c8, const Triangle &t){
-        return c0*t.p0 + c1*t.p1 + c2*t.p2 + c3*t.p3 + c4*t.p4 + c5*t.p5 + c6*t.p6 + c7*t.p7 + c8*t.p8;
+        return c0*t.p0 + 0.0*c1*t.p1 + 0.0*c2*t.p2 + 0.0*c3*t.p3 + 0.0*c4*t.p4 + 0.0*c5*t.p5 + 0.0*c6*t.p6 + 0.0*c7*t.p7 + 0.0*c8*t.p8;
     }
 
     static array<double, 2> intersect(const array<double, 2> &P1, const array<double, 2> &P2, const double x){
@@ -398,9 +398,7 @@ private:
         if (fabs(mg0>1E6)||fabs(mg1)>1E6){
             t.p0 = t.p1 = t.p2 = t.p3 = t.p4 = t.p5 = t.p6 = t.p7 = t.p8 = 0.0;
         }else{
-            cdouble atest = a1.real();
-            atest = atest-I*fabs(a1.imag());
-            computeTriangleIntegral(mg0, mg1, cg0, cg1, x0, x1, R0, R1, atest, t);
+            computeTriangleIntegral(mg0, mg1, cg0, cg1, x0, x1, R0, R1, a1, t);
             cdouble a0i = 1.0/a0;
             t.p0*=a0i;
             t.p1*=a0i;
