@@ -318,11 +318,16 @@ private:
     void setupHalfTriangles(const cdouble a0, const double a1, const double a2, const bool upper){
         array<double, 2> Q0, Q1, Q2, Q4, Q5, Q6, Q7;
         cdouble a;
-        double theta = atan2(a2, -a1);
+        double theta = atan2(a2, -a1);//TODO: Try -a2 also.
         double R0 = cos(theta);
         double R1 = sin(theta);
+        if (fabs(R0)<1E-12){
+            R0 = 1E-12;
+        }
+        if (fabs(R1)<1E-12){
+            R1 = 1E-12;
+        }
         a = (R0 * a1 + R1 * a2) / a0;
-        cout<<R0<<", "<<R1<<endl;
         if (upper){
             Q0[0] = 1.0*R0 + 1.0*R1;
             Q0[1] = 1.0*-R1 + 1.0*R0;
@@ -940,8 +945,9 @@ public://TODO: private later
         const cdouble iw = 1.0/w;
         for (size_t k=0;k<ns.size();k++){
             for (size_t ai=0;ai<n_taylor;ai++){
-                if (fabs(a_mins[k] + ai*das[k] + wr)<4*damaxs[k][ai]){
+                if (fabs(a_mins[k] + ai*das[k] + wr)<10*damaxs[k][ai]){
                     const int n = ns[k];
+                    continue;
                     //cout<<series.mapping[k].size()<<endl;
                     for (pair<size_t, size_t> p:series.mapping[k][ai]){
                         double z0, z1, z2, z3;
@@ -994,8 +1000,8 @@ public://TODO: private later
         X[2][0] = -X02*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[2][1] = -I*X12*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[2][2] = X22*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        cout<<1.0 + X[0][0]<<", "<<X[0][1]<<", "<<1.0 + X[1][1]<<", "<<1.0 + X[2][2]<<endl;
-        cout<<X[0][0]<<", "<<X[0][1]<<", "<<X[1][1]<<", "<<X[2][2]<<endl;
+//        cout<<1.0 + X[0][0]<<", "<<X[0][1]<<", "<<1.0 + X[1][1]<<", "<<1.0 + X[2][2]<<endl;
+//        cout<<X[0][0]<<", "<<X[0][1]<<", "<<X[1][1]<<", "<<X[2][2]<<endl;
         return X;
     }
 };
