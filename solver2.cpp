@@ -882,10 +882,10 @@ public://TODO: private later
     }
 
     void push_kpara(const double kpara){
-        series = TaylorSum(n_taylor, ns);
+        series = TaylorSum(n_taylor+1, ns);
         das = arr1d(ns.size(), 0.0);
         a_mins = arr1d(ns.size(), 0.0);
-        damaxs = arr2d(ns.size(), arr1d(n_taylor, 0.0));
+        damaxs = arr2d(ns.size(), arr1d(n_taylor+1, 0.0));
         for (size_t k=0;k<ns.size();k++) {
             const int n = ns[k];
             double a_min{DBL_MAX}, a_max{DBL_MIN}, da;
