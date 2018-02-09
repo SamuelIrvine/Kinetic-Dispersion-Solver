@@ -1078,6 +1078,7 @@ public:
 
     np::ndarray marginalize(const np::ndarray &arr) {
         int nd = arr.get_nd();
+        cout<<nd<<endl;
         Py_intptr_t const *shape = arr.get_shape();
         Py_intptr_t const *stride = arr.get_strides();
         np::ndarray result = np::zeros(nd, shape, arr.get_dtype());
