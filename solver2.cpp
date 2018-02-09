@@ -318,7 +318,7 @@ private:
     void setupHalfTriangles(const cdouble a0, const double a1, const double a2, const bool upper){
         array<double, 2> Q0, Q1, Q2, Q4, Q5, Q6, Q7;
         cdouble a;
-        double theta = atan2(a2, -a1);  //TODO: Try -a2 also
+        double theta = atan2(-a2, -a1);  //TODO: Try -a2 also
         double R0 = cos(theta);
         double R1 = sin(theta);
         if (fabs(R0)<1E-8){
