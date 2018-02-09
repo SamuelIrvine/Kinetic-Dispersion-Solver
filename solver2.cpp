@@ -842,7 +842,7 @@ public://TODO: private later
                 U3[i][j] = ppara_h[j]*(pperp_h[i]*df_dppara_h[i][j] - ppara_h[j]*df_dpperp_h[i][j])/(mass*gamma[i][j]*gamma[i][j]);
                 W0[i][j] = ppara_h[j]*pperp_h[i]*df_dppara_h[i][j]/gamma[i][j];
                 W1[i][j] = wc0*ppara_h[j]*(ppara_h[j]*df_dpperp_h[i][j] - pperp_h[i]*df_dppara_h[i][j])/(gamma[i][j]*gamma[i][j]);
-                gamma[i][j] = sqrt(1.0 + pow(pperp_h[i]/(cl*mass), 2));
+                //gamma[i][j] = sqrt(1.0 + pow(pperp_h[i]/(cl*mass), 2));
 
             }
         }
@@ -891,7 +891,7 @@ public://TODO: private later
             double a_min{DBL_MAX}, a_max{DBL_MIN}, da;
             for (size_t i = 0; i < nperp_g + 1; i++) {
                 for (size_t j = 0; j < npara_g + 1; j++) {
-                    double a = -kpara*vpara_h[i*2][j*2] - n*gamma[i*2][j*2]*wc0;
+                    double a = -kpara*vpara_h[i*2][j*2] - n*wc0/gamma[i*2][j*2];
                     if (a>a_max){
                         a_max = a;
                     }
@@ -908,10 +908,10 @@ public://TODO: private later
                 for (size_t j = 0; j < npara_g; j++) {
                     double a, a0, a1, b, c, d, z0, z1, z2, z3, damax;
                     size_t ai;
-                    z0 = -kpara*vpara_h[i*2][j*2] - n*gamma[i*2][j*2]*wc0;
-                    z1 = -kpara*vpara_h[i*2][j*2+2] - n*gamma[i*2][j*2+2]*wc0;
-                    z2 = -kpara*vpara_h[i*2+2][j*2] - n*gamma[i*2+2][j*2]*wc0;
-                    z3 = -kpara*vpara_h[i*2+2][j*2+2] - n*gamma[i*2+2][j*2+2]*wc0;
+                    z0 = -kpara*vpara_h[i*2][j*2] - n*wc0/gamma[i*2][j*2];
+                    z1 = -kpara*vpara_h[i*2][j*2+2] - n*wc0/gamma[i*2][j*2+2];
+                    z2 = -kpara*vpara_h[i*2+2][j*2] - n*wc0/gamma[i*2+2][j*2];
+                    z3 = -kpara*vpara_h[i*2+2][j*2+2] - n*wc0/gamma[i*2+2][j*2+2];
                     a = 0.25*(z0+z1+z2+z3);
                     ai = (size_t)((a - a_min)/da + 0.5);
                     a0 = ai*da + a_min;
@@ -952,10 +952,10 @@ public://TODO: private later
                     for (pair<size_t, size_t> p:series.mapping[k][ai]){
                         double z0, z1, z2, z3;
                         size_t i{p.first}, j{p.second};
-                        z0 = wr -kpara*vpara_h[i*2][j*2] - n*gamma[i*2][j*2]*wc0;
-                        z1 = wr -kpara*vpara_h[i*2][j*2+2] - n*gamma[i*2][j*2+2]*wc0;
-                        z2 = wr -kpara*vpara_h[i*2+2][j*2] - n*gamma[i*2+2][j*2]*wc0;
-                        z3 = wr -kpara*vpara_h[i*2+2][j*2+2] - n*gamma[i*2+2][j*2+2]*wc0;
+                        z0 = wr -kpara*vpara_h[i*2][j*2] - n*wc0/gamma[i*2][j*2];
+                        z1 = wr -kpara*vpara_h[i*2][j*2+2] - n*wc0/gamma[i*2][j*2+2];
+                        z2 = wr -kpara*vpara_h[i*2+2][j*2] - n*wc0/gamma[i*2+2][j*2];
+                        z3 = wr -kpara*vpara_h[i*2+2][j*2+2] - n*wc0/gamma[i*2+2][j*2+2];
 
                         TriangleIntegrator integrator;
                         integrator.pushTriangles(wi, z0, z1, z2, z3);
