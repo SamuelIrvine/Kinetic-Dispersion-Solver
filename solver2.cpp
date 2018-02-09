@@ -16,7 +16,7 @@ typedef vector<double> arr1d;
 typedef vector<vector<double>> arr2d;
 
 const double e0 = 8.85E-12; //TODO: increase precision
-const double cl = 3E8*1.3;
+const double cl = 3E8*1.2;
 const cdouble I{0.0, 1.0};
 
 static arr1d extract1d(const p::api::const_object_attribute &obj) {
