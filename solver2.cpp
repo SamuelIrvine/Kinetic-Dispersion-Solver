@@ -838,8 +838,8 @@ public://TODO: private later
                 df_dppara_h[i][j]/=sum;
                 U0[i][j] = df_dpperp_h[i][j] / gamma[i][j];
                 U1[i][j] = ppara_h[j]*df_dpperp_h[i][j]/gamma[i][j];
-                U2[i][j] = (pperp_h[i]*df_dppara_h[i][j] - ppara_h[j]*df_dpperp_h[i][j])/(mass*gamma[i][j]);
-                U3[i][j] = ppara_h[j]*(pperp_h[i]*df_dppara_h[i][j] - ppara_h[j]*df_dpperp_h[i][j])/(mass*gamma[i][j]);
+                U2[i][j] = (pperp_h[i]*df_dppara_h[i][j] - ppara_h[j]*df_dpperp_h[i][j])/(mass*gamma[i][j]*gamma[i][j]);
+                U3[i][j] = ppara_h[j]*(pperp_h[i]*df_dppara_h[i][j] - ppara_h[j]*df_dpperp_h[i][j])/(mass*gamma[i][j]*gamma[i][j]);
                 W0[i][j] = ppara_h[j]*pperp_h[i]*df_dppara_h[i][j]/gamma[i][j];
                 W1[i][j] = wc0*ppara_h[j]*(ppara_h[j]*df_dpperp_h[i][j] - pperp_h[i]*df_dppara_h[i][j])/gamma[i][j];
             }
