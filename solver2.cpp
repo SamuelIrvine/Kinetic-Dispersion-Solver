@@ -318,7 +318,7 @@ private:
     void setupHalfTriangles(const cdouble a0, const double a1, const double a2, const bool upper){
         array<double, 2> Q0, Q1, Q2, Q4, Q5, Q6, Q7;
         cdouble a;
-        double theta = atan2(a2, -a1);  //TODO: Try -a2 also
+        double theta = atan2(-a2, -a1);  //TODO: Try -a2 also
         double R0 = cos(theta);
         double R1 = sin(theta);
         if (fabs(R0)<1E-8){
@@ -745,7 +745,7 @@ public://TODO: private later
 
     arr1d ppara_h, pperp_h; //Half grid spacing
     arr2d df_dpperp_h, df_dppara_h;
-    arr2d gamma, vpara_h, U0, U1, U2, U3, W0, W1;
+    arr2d igamma, vpara_h, U0, U1, U2, U3, W0, W1;
 
     arr1d z;
     arr2d jns, jnds;
@@ -784,7 +784,7 @@ public://TODO: private later
         df_dppara_h = arr2d(nperp_h, arr1d(npara_h, 0.0));
         df_dpperp_h = arr2d(nperp_h, arr1d(npara_h, 0.0));
         vpara_h = arr2d(nperp_h, arr1d(npara_h, 0.0));
-        gamma = arr2d(nperp_h, arr1d(npara_h, 0.0));
+        igamma = arr2d(nperp_h, arr1d(npara_h, 0.0));
 
         U0 = arr2d(nperp_h, arr1d(npara_h, 0.0));
         U1 = arr2d(nperp_h, arr1d(npara_h, 0.0));
@@ -832,18 +832,16 @@ public://TODO: private later
 
         for (size_t i=0;i < nperp_h ; i++){
             for (size_t j=0;j<npara_h;j++){
-                gamma[i][j] = sqrt(1.0 + pow(pperp_h[i]/(cl*mass), 2) + pow(ppara_h[j]/(cl*mass), 2));
-                vpara_h[i][j] = ppara_h[j] / (gamma[i][j]*mass);
+                igamma[i][j] = 1.0/sqrt(1.0 + pow(pperp_h[i]/(cl*mass), 2) + pow(ppara_h[j]/(cl*mass), 2));
+                vpara_h[i][j] = ppara_h[j] * igamma[i][j] * (1.0/mass);
                 df_dpperp_h[i][j]/=sum;
                 df_dppara_h[i][j]/=sum;
-                U0[i][j] = df_dpperp_h[i][j] / gamma[i][j];
-                U1[i][j] = ppara_h[j]*df_dpperp_h[i][j]/gamma[i][j];
-                U2[i][j] = (pperp_h[i]*df_dppara_h[i][j] - ppara_h[j]*df_dpperp_h[i][j])/(mass*gamma[i][j]*gamma[i][j]);
-                U3[i][j] = ppara_h[j]*(pperp_h[i]*df_dppara_h[i][j] - ppara_h[j]*df_dpperp_h[i][j])/(mass*gamma[i][j]*gamma[i][j]);
-                W0[i][j] = ppara_h[j]*pperp_h[i]*df_dppara_h[i][j]/gamma[i][j];
-                W1[i][j] = wc0*ppara_h[j]*(ppara_h[j]*df_dpperp_h[i][j] - pperp_h[i]*df_dppara_h[i][j])/(gamma[i][j]*gamma[i][j]);
-                //gamma[i][j] = sqrt(1.0 + pow(pperp_h[i]/(cl*mass), 2));
-
+                U0[i][j] = df_dpperp_h[i][j] * igamma[i][j];
+                U1[i][j] = ppara_h[j]*df_dpperp_h[i][j] * igamma[i][j];
+                U2[i][j] = (pperp_h[i]*df_dppara_h[i][j] - ppara_h[j]*df_dpperp_h[i][j])*igamma[i][j]*igamma[i][j]*(1.0/mass);
+                U3[i][j] = ppara_h[j]*(pperp_h[i]*df_dppara_h[i][j] - ppara_h[j]*df_dpperp_h[i][j])*igamma[i][j]*igamma[i][j]*(1.0/mass);
+                W0[i][j] = ppara_h[j]*pperp_h[i]*df_dppara_h[i][j]*igamma[i][j];
+                W1[i][j] = wc0*ppara_h[j]*(ppara_h[j]*df_dpperp_h[i][j] - pperp_h[i]*df_dppara_h[i][j])*(igamma[i][j]*igamma[i][j]);
             }
         }
 
@@ -891,7 +889,7 @@ public://TODO: private later
             double a_min{DBL_MAX}, a_max{DBL_MIN}, da;
             for (size_t i = 0; i < nperp_g + 1; i++) {
                 for (size_t j = 0; j < npara_g + 1; j++) {
-                    double a = -kpara*vpara_h[i*2][j*2] - n*wc0/gamma[i*2][j*2];
+                    double a = -kpara*vpara_h[i*2][j*2] - n*wc0*igamma[i*2][j*2];
                     if (a>a_max){
                         a_max = a;
                     }
@@ -908,10 +906,10 @@ public://TODO: private later
                 for (size_t j = 0; j < npara_g; j++) {
                     double a, a0, a1, b, c, d, z0, z1, z2, z3, damax;
                     size_t ai;
-                    z0 = -kpara*vpara_h[i*2][j*2] - n*wc0/gamma[i*2][j*2];
-                    z1 = -kpara*vpara_h[i*2][j*2+2] - n*wc0/gamma[i*2][j*2+2];
-                    z2 = -kpara*vpara_h[i*2+2][j*2] - n*wc0/gamma[i*2+2][j*2];
-                    z3 = -kpara*vpara_h[i*2+2][j*2+2] - n*wc0/gamma[i*2+2][j*2+2];
+                    z0 = -kpara*vpara_h[i*2][j*2] - n*wc0*igamma[i*2][j*2];
+                    z1 = -kpara*vpara_h[i*2][j*2+2] - n*wc0*igamma[i*2][j*2+2];
+                    z2 = -kpara*vpara_h[i*2+2][j*2] - n*wc0*igamma[i*2+2][j*2];
+                    z3 = -kpara*vpara_h[i*2+2][j*2+2] - n*wc0*igamma[i*2+2][j*2+2];
                     a = 0.25*(z0+z1+z2+z3);
                     ai = (size_t)((a - a_min)/da + 0.5);
                     a0 = ai*da + a_min;
@@ -952,10 +950,10 @@ public://TODO: private later
                     for (pair<size_t, size_t> p:series.mapping[k][ai]){
                         double z0, z1, z2, z3;
                         size_t i{p.first}, j{p.second};
-                        z0 = wr -kpara*vpara_h[i*2][j*2] - n*wc0/gamma[i*2][j*2];
-                        z1 = wr -kpara*vpara_h[i*2][j*2+2] - n*wc0/gamma[i*2][j*2+2];
-                        z2 = wr -kpara*vpara_h[i*2+2][j*2] - n*wc0/gamma[i*2+2][j*2];
-                        z3 = wr -kpara*vpara_h[i*2+2][j*2+2] - n*wc0/gamma[i*2+2][j*2+2];
+                        z0 = wr -kpara*vpara_h[i*2][j*2] - n*wc0*igamma[i*2][j*2];
+                        z1 = wr -kpara*vpara_h[i*2][j*2+2] - n*wc0*igamma[i*2][j*2+2];
+                        z2 = wr -kpara*vpara_h[i*2+2][j*2] - n*wc0*igamma[i*2+2][j*2];
+                        z3 = wr -kpara*vpara_h[i*2+2][j*2+2] - n*wc0*igamma[i*2+2][j*2+2];
 
                         TriangleIntegrator integrator;
                         integrator.pushTriangles(wi, z0, z1, z2, z3);
