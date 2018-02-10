@@ -873,7 +873,7 @@ public://TODO: private later
                 kp1[k][i] = n*jns[k][i]*jnds[k][i]*pperp_h[i]*(wc0*mass/(kperp));
                 kp2[k][i] = n*jns[k][i]*jns[k][i]*(wc0*mass/(kperp));
                 kp3[k][i] = jnds[k][i]*jnds[k][i]*pperp_h[i]*pperp_h[i];
-                kp4[k][i] = n*jns[k][i]*jnds[k][i]*pperp_h[i];
+                kp4[k][i] = jns[k][i]*jnds[k][i]*pperp_h[i];
                 kp5[k][i] = jns[k][i]*jns[k][i];
             }
         }
