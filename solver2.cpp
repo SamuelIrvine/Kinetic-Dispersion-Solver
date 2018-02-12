@@ -293,6 +293,54 @@ public:
 
         setupHalfTriangles(a0, a1, a2, false);
         setupHalfTriangles(a3, a4, a5, true);
+
+        //cout<<"Ana Lower: p0: "<<triA.p0+triB.p0<<", p1: "<<triA.p1+triB.p1<<", p2: "<<triA.p2+triB.p2
+        //    <<", p3: "<<triA.p3+triB.p3<<", p4: "<<triA.p4+triB.p4
+        //    <<", p5: "<<triA.p5+triB.p5<<", p6: "<<triA.p6+triB.p6
+        //    <<", p7: "<<triA.p7+triB.p7<<", p8: "<<triA.p8+triB.p8<<endl;
+//        cout<<"Ana Upper: p0: "<<triC.p0+triD.p0<<", p1: "<<triC.p1+triD.p1<<", p2: "<<triC.p2+triD.p2
+//            <<", p3: "<<triC.p3+triD.p3<<", p4: "<<triC.p4+triD.p4
+//            <<", p5: "<<triC.p5+triD.p5<<", p6: "<<triC.p6+triD.p6
+//            <<", p7: "<<triC.p7+triD.p7<<", p8: "<<triC.p8+triD.p8<<endl;
+//        cdouble p0l, p1l, p2l, p3l, p4l, p5l, p6l, p7l, p8l;
+//        cdouble p0u, p1u, p2u, p3u, p4u, p5u, p6u, p7u, p8u;
+//        for (size_t i=0;i<1000;i++){
+//            double x = (i+0.5)/1000;
+//            for (size_t j=0;j<1000;j++){
+//                double y = (j+0.5)/1000;
+//                if (x+y<1.0){
+//                    cdouble r=1.0/(1000.*1000.*(a0 + a1*x + a2*y));
+//                    p0l+=r;
+//                    p1l+=r*x;
+//                    p2l+=r*x*x;
+//                    p3l+=r*y;
+//                    p4l+=r*x*y;
+//                    p5l+=r*x*x*y;
+//                    p6l+=r*y*y;
+//                    p7l+=r*x*y*y;
+//                    p8l+=r*x*x*y*y;
+//                }else{
+//                    cdouble r=1.0/(1000.*1000.*(a3 + a4*x + a5*y));
+//                    p0u+=r;
+//                    p1u+=r*x;
+//                    p2u+=r*x*x;
+//                    p3u+=r*y;
+//                    p4u+=r*x*y;
+//                    p5u+=r*x*x*y;
+//                    p6u+=r*y*y;
+//                    p7u+=r*x*y*y;
+//                    p8u+=r*x*x*y*y;
+//                }
+//            }
+//        }
+        //cout<<"Sum Lower: p0: "<<p0l<<", p1: "<<p1l<<", p2: "<<p2l
+        //    <<", p3: "<<p3l<<", p4: "<<p4l
+        //    <<", p5: "<<p5l<<", p6: "<<p6l
+        //    <<", p7: "<<p7l<<", p8: "<<p8l<<endl;
+//        cout<<"Sum Upper: p0: "<<p0u<<", p1: "<<p1u<<", p2: "<<p2u
+//            <<", p3: "<<p3u<<", p4: "<<p4u
+//            <<", p5: "<<p5u<<", p6: "<<p6u
+//            <<", p7: "<<p7u<<", p8: "<<p8u<<endl;
     }
 
 private:
@@ -318,7 +366,7 @@ private:
     void setupHalfTriangles(const cdouble a0, const double a1, const double a2, const bool upper){
         array<double, 2> Q0, Q1, Q2, Q4, Q5, Q6, Q7;
         cdouble a;
-        double theta = atan2(a2, -a1);  //TODO: Try -a2 also
+        double theta = atan2(-a2, -a1);
         double R0 = cos(theta);
         double R1 = sin(theta);
         //cout<<theta<<endl;
@@ -947,7 +995,7 @@ public://TODO: private later
         const cdouble iw = 1.0/w;
         for (size_t k=0;k<ns.size();k++){
             for (size_t ai=0;ai<n_taylor;ai++){
-                if (fabs(a_mins[k] + ai*das[k] + wr)<10*damaxs[k][ai]){
+                if (fabs(a_mins[k] + ai*das[k] + wr)<20*damaxs[k][ai]){
                     const int n = ns[k];
                     //cout<<series.mapping[k].size()<<endl;
                     for (pair<size_t, size_t> p:series.mapping[k][ai]){
@@ -1103,6 +1151,9 @@ public:
     }
 
 };
+
+
+
 
 
 BOOST_PYTHON_MODULE (libSolver) {
