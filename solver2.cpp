@@ -214,16 +214,16 @@ public:
                                         30 * a1 * (c * c * Z4 + b * (b * Z5 - 20 * c * Z3 + 2 * d * Z7) + 2 * c * d * Z6) -
                                         3 * a1 * d*d * Z8 - 3 * b * (d*d * Z11 - 10 * c * c * Z6 + 2 * c * d * Z8) + 10 * b * b * b * Z10 +
                                         30 * b * b * (c * Z7 + d * Z9));
-        X.sum5[ni][ai]+=(1.0/12600.0) * (350 * a1*a1*a1*a1 * Z0 - 10 * b*b*b*b * Z15 +
-                                         14 * b * c * (-10 * c*c * Z13 + 3 * c * d * Z14 + 3 * d*d * Z18) +
-                                         2 * c*c * (-5 * c * (c * Z19 + 4 * d * Z20) + 3 * d*d * Z21) +
-                                         1400 * a1*a1*a1 * (b * Z1 + c * Z2 + d * Z3) +
-                                         3 * b*b * (2 * d * (7 * c * Z11 + d * Z17) + 7 * c*c * Z8) +
-                                         21 * a1*a1 * (-10 * (c*c * Z4 + b * (b * Z5 - 20 * c * Z3 + 2 * d * Z7) + 2 * c * d * Z6) +
-                                                       d*d * Z8) - 20 * b*b*b * (2 * d * Z16 + 7 * c * Z9) -
-                                         14 * a1 * (c * (10 * c * (c * Z12 + 3 * d * Z13) - 3 * d*d * Z14) -
-                                                    3 * b * (d*d * Z11 - 10 * c*c * Z6 + 2 * c * d * Z8) + 10 * b*b*b * Z10 +
-                                                    30 * b*b * (c * Z7 + d * Z9)));
+//        X.sum5[ni][ai]+=(1.0/12600.0) * (350 * a1*a1*a1*a1 * Z0 - 10 * b*b*b*b * Z15 +
+//                                         14 * b * c * (-10 * c*c * Z13 + 3 * c * d * Z14 + 3 * d*d * Z18) +
+//                                         2 * c*c * (-5 * c * (c * Z19 + 4 * d * Z20) + 3 * d*d * Z21) +
+//                                         1400 * a1*a1*a1 * (b * Z1 + c * Z2 + d * Z3) +
+//                                         3 * b*b * (2 * d * (7 * c * Z11 + d * Z17) + 7 * c*c * Z8) +
+//                                         21 * a1*a1 * (-10 * (c*c * Z4 + b * (b * Z5 - 20 * c * Z3 + 2 * d * Z7) + 2 * c * d * Z6) +
+//                                                       d*d * Z8) - 20 * b*b*b * (2 * d * Z16 + 7 * c * Z9) -
+//                                         14 * a1 * (c * (10 * c * (c * Z12 + 3 * d * Z13) - 3 * d*d * Z14) -
+//                                                    3 * b * (d*d * Z11 - 10 * c*c * Z6 + 2 * c * d * Z8) + 10 * b*b*b * Z10 +
+//                                                    30 * b*b * (c * Z7 + d * Z9)));
     }
 
     void pushW(cdouble w, const size_t ni, const size_t ai){
@@ -825,7 +825,7 @@ public://TODO: private later
         nperp_h = nperp_g*2 + 1;
         npara_h = npara_g*2 + 1;
 
-        n_taylor = 2000;
+        n_taylor = 1000;
 
         ppara_h = arr1d(npara_h, 0.0);
         pperp_h = arr1d(nperp_h, 0.0);
