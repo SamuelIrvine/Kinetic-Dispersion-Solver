@@ -286,61 +286,8 @@ public:
         a5 = z3 - z1;
         a3 = z3 - a4 - a5 + I*wi;
 
-        //a0 = z0
-        //a0 + a1 = z1
-        //a0 + a2 = z2
-        //a3 + a4 + a5 = z3
-
         setupHalfTriangles(a0, a1, a2, false);
         setupHalfTriangles(a3, a4, a5, true);
-
-        //cout<<"Ana Lower: p0: "<<triA.p0+triB.p0<<", p1: "<<triA.p1+triB.p1<<", p2: "<<triA.p2+triB.p2
-        //    <<", p3: "<<triA.p3+triB.p3<<", p4: "<<triA.p4+triB.p4
-        //    <<", p5: "<<triA.p5+triB.p5<<", p6: "<<triA.p6+triB.p6
-        //    <<", p7: "<<triA.p7+triB.p7<<", p8: "<<triA.p8+triB.p8<<endl;
-//        cout<<"Ana Upper: p0: "<<triC.p0+triD.p0<<", p1: "<<triC.p1+triD.p1<<", p2: "<<triC.p2+triD.p2
-//            <<", p3: "<<triC.p3+triD.p3<<", p4: "<<triC.p4+triD.p4
-//            <<", p5: "<<triC.p5+triD.p5<<", p6: "<<triC.p6+triD.p6
-//            <<", p7: "<<triC.p7+triD.p7<<", p8: "<<triC.p8+triD.p8<<endl;
-//        cdouble p0l, p1l, p2l, p3l, p4l, p5l, p6l, p7l, p8l;
-//        cdouble p0u, p1u, p2u, p3u, p4u, p5u, p6u, p7u, p8u;
-//        for (size_t i=0;i<1000;i++){
-//            double x = (i+0.5)/1000;
-//            for (size_t j=0;j<1000;j++){
-//                double y = (j+0.5)/1000;
-//                if (x+y<1.0){
-//                    cdouble r=1.0/(1000.*1000.*(a0 + a1*x + a2*y));
-//                    p0l+=r;
-//                    p1l+=r*x;
-//                    p2l+=r*x*x;
-//                    p3l+=r*y;
-//                    p4l+=r*x*y;
-//                    p5l+=r*x*x*y;
-//                    p6l+=r*y*y;
-//                    p7l+=r*x*y*y;
-//                    p8l+=r*x*x*y*y;
-//                }else{
-//                    cdouble r=1.0/(1000.*1000.*(a3 + a4*x + a5*y));
-//                    p0u+=r;
-//                    p1u+=r*x;
-//                    p2u+=r*x*x;
-//                    p3u+=r*y;
-//                    p4u+=r*x*y;
-//                    p5u+=r*x*x*y;
-//                    p6u+=r*y*y;
-//                    p7u+=r*x*y*y;
-//                    p8u+=r*x*x*y*y;
-//                }
-//            }
-//        }
-        //cout<<"Sum Lower: p0: "<<p0l<<", p1: "<<p1l<<", p2: "<<p2l
-        //    <<", p3: "<<p3l<<", p4: "<<p4l
-        //    <<", p5: "<<p5l<<", p6: "<<p6l
-        //    <<", p7: "<<p7l<<", p8: "<<p8l<<endl;
-//        cout<<"Sum Upper: p0: "<<p0u<<", p1: "<<p1u<<", p2: "<<p2u
-//            <<", p3: "<<p3u<<", p4: "<<p4u
-//            <<", p5: "<<p5u<<", p6: "<<p6u
-//            <<", p7: "<<p7u<<", p8: "<<p8u<<endl;
     }
 
 private:
@@ -363,22 +310,17 @@ private:
         return array<double, 2>{x, m*x + c};
     };
 
-    void setupHalfTriangles(const cdouble a0, const double a1, const double a2, const bool upper){
+    void setupHalfTriangles(const cdouble a0, const double a1, const double a2, const bool upper, bool debug = false){
         array<double, 2> Q0, Q1, Q2, Q4, Q5, Q6, Q7;
         cdouble a;
-        double theta = atan2(-a2, -a1);
+        double theta = atan2(a2, a1);
         double R0 = cos(theta);
         double R1 = sin(theta);
-        //cout<<theta<<endl;
-        if (fabs(R0)<1E-8){
-            R0 = 1E-8;
-        }
-        if (fabs(R1)<1E-8){
-            R1 = 1E-8;
-        }
         a = (R0 * a1 + R1 * a2) / a0;
-
+        Triangle &tri1 = upper?triD:triB;
+        Triangle &tri2 = upper?triC:triA;
         if (upper){
+            //Triangles always clockwise.
             Q0[0] = 1.0*R0 + 1.0*R1;
             Q0[1] = 1.0*-R1 + 1.0*R0;
             Q1[0] = 1.0*R0 + 0.0*R1;
@@ -392,6 +334,30 @@ private:
             Q1[1] = 1.0*-R1 + 0.0*R0;
             Q2[0] = 0.0*R0 + 1.0*R1;
             Q2[1] = 0.0*-R1 + 1.0*R0;
+        }
+        if (fabs(Q0[0] - Q1[0])<0.00001){
+            tri1.QA = Q2;
+            tri1.QB = Q0;
+            tri1.QC = Q1;
+            setupTriangle(tri1, R0, R1, a, a0);
+            zeroTriangle(tri2);
+            return;
+        }
+        if (fabs(Q0[0] - Q2[0])<0.00001){
+            tri1.QA = Q1;
+            tri1.QB = Q0;
+            tri1.QC = Q2;
+            setupTriangle(tri1, R0, R1, a, a0);
+            zeroTriangle(tri2);
+            return;
+        }
+        if (fabs(Q1[0] - Q2[0])<0.00001){
+            tri1.QA = Q0;
+            tri1.QB = Q1;
+            tri1.QC = Q2;
+            setupTriangle(tri1, R0, R1, a, a0);
+            zeroTriangle(tri2);
+            return;
         }
         if ((Q1[0] < Q0[0] && Q0[0] < Q2[0]) || (Q2[0] < Q0[0] && Q0[0] < Q1[0])){
             Q4 = Q2;
@@ -412,9 +378,6 @@ private:
             Q7 = Q1;
         }
 
-        Triangle &tri1 = upper?triD:triB;
-        Triangle &tri2 = upper?triC:triA;
-
         tri1.QA = Q4;
         tri1.QB = Q5;
         tri1.QC = Q6;
@@ -422,356 +385,171 @@ private:
         tri2.QB = Q5;
         tri2.QC = Q6;
 
-        setupTriangle(tri1, R0, R1, a, a0);
-        setupTriangle(tri2, R0, R1, a, a0);
+        setupTriangle(tri1, R0, R1, a, a0, debug);
+        setupTriangle(tri2, R0, R1, a, a0, debug);
 
     }
 
-    void setupTriangle(Triangle &t, const double R0, const double R1, const cdouble a1, const cdouble a0){
-        double mg0, mg1, cg0, cg1;
-        double x0, x1;
+    void zeroTriangle(Triangle &t){
+        t.p0 = t.p1 = t.p2 = t.p3 = t.p4 = t.p5 = t.p6 = t.p7 = t.p8 = 0.0;
+    }
+
+    void setupTriangle(Triangle &t, const double R0, const double R1, const cdouble a1, const cdouble a0, bool debug = false){
+        double y0 = t.QA[1];
+        double x0 = t.QA[0];
+        double x1 = t.QB[0] - x0;
         double mAB = (t.QA[1] - t.QB[1]) / (t.QA[0] - t.QB[0]);
-        double cAB = t.QA[1] - mAB * t.QA[0];
         double mAC = (t.QA[1] - t.QC[1]) / (t.QA[0] - t.QC[0]);
-        double cAC = t.QA[1] - mAC * t.QA[0];
+        double m0 = (mAB>mAC)?mAC:mAB;
+        double m1 = (mAB>mAC)?mAB:mAC;
 
-        if (t.QC[1] > t.QB[1]) {
-            mg0 = mAB;
-            cg0 = cAB;
-            mg1 = mAC;
-            cg1 = cAC;
-        } else {
-            mg1 = mAB;
-            cg1 = cAB;
-            mg0 = mAC;
-            cg0 = cAC;
-        }
+        computeTriangleIntegral(m0, m1, x0, y0, x1, R0, R1, a1, t);
+        cdouble a0i = (1.0)/a0;
+        t.p0*=a0i;
+        t.p1*=a0i;
+        t.p2*=a0i;
+        t.p3*=a0i;
+        t.p4*=a0i;
+        t.p5*=a0i;
+        t.p6*=a0i;
+        t.p7*=a0i;
+        t.p8*=a0i;
 
-        if (t.QA[0] < t.QB[0]) {
-            x0 = t.QA[0];
-            x1 = t.QB[0];
+        if (debug){
+            cout<<"mg0: "<<m0<<", mg1: "<<m1<<", x0: "<<x0<<", x1: "<<x1<<endl;
         }
-        else {
-            x0 = t.QB[0];
-            x1 = t.QA[0];
-        }
+    }
 
-        if (fabs(mg0>1E6)||fabs(mg1)>1E6){
-            t.p0 = t.p1 = t.p2 = t.p3 = t.p4 = t.p5 = t.p6 = t.p7 = t.p8 = 0.0;
+    void computeTriangleIntegral(const double m0, const double m1, const double x0, const double y0,
+                                  const double x1, const double R0, const double R1, const cdouble a1, Triangle& t) {
+
+        //cdouble logfac = log(1. + (a1 * x1)/(1. + a1 * x0));
+
+        //Integral is of form 1/(1 + a1*x0 + a1*x1)
+        //Divide through by (1 + a1*x0)
+        //Integral now of form 1/(1 + a2*x1)
+        cdouble Inorm = 1.0/(1.0 + a1*x0);
+        cdouble a2 = a1*Inorm;
+        cdouble O0, O1, O2, O3, O4, O5;
+        if (fabs(x1*a2.imag())<0.1 && fabs(x1*a2.real())< 0.1){
+            cdouble logfacsum{0.0, 0.0};
+            for (size_t i = 19; i > 5; i--) {
+                logfacsum -= pow(-x1*a2, i)/(0.0+i);
+            }
+            O5 = logfacsum;
+            O4 = O5 - pow(-x1*a2, 5)/5.;
+            O3 = O4 - pow(-x1*a2, 4)/4.;
+            O2 = O3 - pow(-x1*a2, 3)/3.;
+            O1 = O2 - pow(-x1*a2, 2)/2.;
+            O0 = O1 - pow(-x1*a2, 1)/1.;
+
         }else{
-            computeTriangleIntegral(mg0, mg1, cg0, cg1, x0, x1, R0, R1, a1, t);
-            cdouble a0i = 1.0/a0;
-            t.p0*=a0i;
-            t.p1*=a0i;
-            t.p2*=a0i;
-            t.p3*=a0i;
-            t.p4*=a0i;
-            t.p5*=a0i;
-            t.p6*=a0i;
-            t.p7*=a0i;
-            t.p8*=a0i;
+            O0 = 0.5*log1p(x1*x1*(a2.real()*a2.real() + a2.imag()*a2.imag())) + I*atan2(x1*a2.imag(), 1.0+x1*a2.real());
+            O1 = O0 + pow(-x1*a2, 1)/1.;
+            O2 = O1 + pow(-x1*a2, 2)/2.;
+            O3 = O2 + pow(-x1*a2, 3)/3.;
+            O4 = O3 + pow(-x1*a2, 4)/4.;
+            O5 = O4 + pow(-x1*a2, 5)/5.;
         }
+
+        cdouble oa2 = 1.0/a2;
+        cdouble oa2_2 = oa2*oa2;
+        cdouble oa2_3 = oa2_2*oa2;
+        cdouble oa2_4 = oa2_3*oa2;
+        cdouble oa2_5 = oa2_4*oa2;
+        cdouble oa2_6 = oa2_5*oa2;
+
+        double x0_2 = x0 * x0;
+        double x0_3 = x0 * x0_2;
+        double x0_4 = x0 * x0_3;
+        double y0_2 = y0 * y0;
+        double y0_3 = y0 * y0_2;
+        double y0_4 = y0 * y0_3;
+        double x1_2 = x1 * x1;
+        double x1_3 = x1 * x1_2;
+        double x1_4 = x1 * x1_3;
+        double m0_2 = m0*m0;
+        double m0_3 = m0_2*m0;
+        double m0_4 = m0_3*m0;
+        double m0_5 = m0_4*m0;
+        double m1_2 = m1*m1;
+        double m1_3 = m1_2*m1;
+        double m1_4 = m1_3*m1;
+        double m1_5 = m1_4*m1;
+        double R0_2 = R0*R0;
+        double R0_3 = R0_2*R0;
+        double R0_4 = R0_3*R0;
+        double R1_2 = R1*R1;
+        double R1_3 = R1_2*R1;
+        double R1_4 = R1_3*R1;
+
+
+
+        cdouble Ix4y0 = Inorm*((m0 - m1) * O5)*oa2_6;
+        cdouble Ix3y1 = Inorm*(0.5*(m0_2 - m1_2) * O5)*oa2_6;
+        cdouble Ix3y0 = Inorm*((-m0 + m1) * O4)*oa2_5;
+        cdouble Ix2y2 = Inorm * ((m0_3 - m1_3) * O5)*(1./3.)*oa2_6;
+        cdouble Ix2y1 = Inorm * (-0.5*(m0_2 - m1_2) * O4)*oa2_5;
+        cdouble Ix2y0 = Inorm*((m0 - m1) * O3)*oa2_4;
+        cdouble Ix1y3 = Inorm*(0.25*(m0_4 - m1_4) * O5)*oa2_6;
+        cdouble Ix1y2 = Inorm*((1.0/3.0) * (-m0_3 + m1_3) * O4)*oa2_5;
+        cdouble Ix1y1 = Inorm*(0.5*(m0_2 - m1_2) * O3)*oa2_4;
+        cdouble Ix1y0 = Inorm*((-m0 + m1) * O2)*oa2_3;
+        cdouble Ix0y4 = Inorm*(0.2*(m0_5 - m1_5) * O5)*oa2_6;
+        cdouble Ix0y3 = Inorm * (0.25*(-m0_4 + m1_4) * O4)*oa2_5;
+        cdouble Ix0y2 = Inorm * ((1.0/3.0)*(m0_3 - m1_3) * O3)*oa2_4;
+        cdouble Ix0y1 = Inorm * (0.5*(-m0_2 + m1_2) * O2)*oa2_3;
+        cdouble Ix0y0 = Inorm * ((m0 - m1) * O1)*oa2_2;
+
+        t.p0 = Ix0y0;
+        t.p1 = R0*Ix1y0 - R1*Ix0y1 + (R0*x0 - R1*y0)*Ix0y0;
+        t.p2 = R0*R0*Ix2y0 - 2*R0*R1*Ix1y1 + Ix1y0*(2.*R0*R0*x0 - 2.*R0*R1*y0)
+                + R1*R1*Ix0y2 + (-2 * R0 * R1 * x0 + 2.*R1*R1 * y0)*Ix0y1
+                + (R0*R0*x0*x0 - 2.*R0*R1*x0*y0 + R1*R1*y0*y0)*Ix0y0;
+        t.p3 = R1*Ix1y0 + R0*Ix0y1 + (R1*x0 + R0*y0)*Ix0y0;
+        t.p4 = R0*R1*Ix2y0 + (R0_2 - R1_2)*Ix1y1 + (2.*R0*R1*x0 + R0_2*y0 - R1_2*y0)*Ix1y0
+                - R0*R1*Ix0y2 + (R0_2*x0 - R1_2*x0 - 2.*R0*R1*y0)*Ix0y1
+                + (R0*R1*x0_2 + R0_2*x0*y0 - R1_2*x0*y0 - R0*R1*y0_2)*Ix0y0;
+        t.p5 = R0_2*R1*Ix3y0
+                + (R0_3 - 2*R0*R1_2)*Ix2y1
+                + (3 * R0_2 * R1 * x0 + R0_3 * y0 - 2 * R0 * R1_2 * y0)*Ix2y0
+                + (-2 * R0_2 * R1 + R1_3)*Ix1y2
+                + (2 * R0_3 * x0 - 4 * R0 * R1_2 * x0 - 4 * R0_2 * R1 * y0 + 2 * R1_3 * y0)*Ix1y1
+                + (3 * R0_2 * R1 * x0_2 + 2 * R0_3 * x0 * y0 - 4 * R0 * R1_2 * x0 * y0 - 2 * R0_2 * R1 * y0_2 + R1_3 * y0_2) * Ix1y0
+                + (R0 * R1_2) * Ix0y3
+                + (-2 * R0_2 * R1 * x0 + R1_3 * x0 + 3 * R0 * R1_2 * y0)*Ix0y2
+                + (R0_3 * x0_2 - 2 * R0 * R1_2 * x0_2 - 4 * R0_2 * R1 * x0 * y0 + 2 * R1_3 * x0 * y0 + 3 * R0 * R1_2 * y0_2) * Ix0y1
+                + (R0_2 * R1 * x0_3 + R0_3 * x0_2 * y0 - 2 * R0 * R1_2 * x0_2 * y0 - 2 * R0_2 * R1 * x0 * y0_2 + R1_3 * x0 * y0_2 + R0 * R1_2 * y0_3)*Ix0y0;
+        t.p6 = R1_2 * Ix2y0 + (2 * R0 * R1)*Ix1y1 + (2 * R1_2 * x0 + 2 * R0 * R1 * y0) * Ix1y0
+                + R0_2*Ix0y2 + (2 * R0 * R1 * x0 + 2 * R0_2 * y0)*Ix0y1
+                + (R1_2 * x0_2 + 2 * R0 * R1 * x0 * y0 + R0_2 * y0_2)*Ix0y0;
+        t.p7 = (R0 * R1_2) * Ix3y0 + (2 * R0_2 * R1 - R1_3)*Ix2y1
+                + (3 * R0 * R1_2 * x0 + 2 * R0_2 * R1 * y0 - R1_3 * y0)*Ix2y0
+                + (R0_3 - 2 * R0 * R1_2)*Ix1y2
+                + (4 * R0_2 * R1 * x0 - 2 * R1_3 * x0 + 2 * R0_3 * y0 - 4 * R0 * R1_2 * y0) * Ix1y1
+                + (3 * R0 * R1_2 * x0_2 + 4 * R0_2 * R1 * x0 * y0 - 2 * R1_3 * x0 * y0 + R0_3 * y0_2 - 2 * R0 * R1_2 * y0_2) * Ix1y0
+                + (-R0_2 * R1)*Ix0y3
+                + (R0_3 * x0 - 2 * R0 * R1_2 * x0 - 3 * R0_2 * R1 * y0)*Ix0y2
+                + (2 * R0_2 * R1 * x0_2 - R1_3 * x0_2 + 2 * R0_3 * x0 * y0 - 4 * R0 * R1_2 * x0 * y0 - 3 * R0_2 * R1 * y0_2)*Ix0y1
+                + (R0 * R1_2 * x0_3 + 2 * R0_2 * R1 * x0_2 * y0 - R1_3 * x0_2 * y0 + R0_3 * x0 * y0_2 - 2 * R0 * R1_2 * x0 * y0_2 - R0_2 * R1 * y0_3)*Ix0y0;
+        t.p8 = (R0_2 * R1_2)*Ix4y0
+                + (2 * R0_3 * R1 - 2 * R0 * R1_3)*Ix3y1
+                + (4 * R0_2 * R1_2 * x0 + 2 * R0_3 * R1 * y0 - 2 * R0 * R1_3 * y0)*Ix3y0
+                + (R0_4 - 4 * R0_2 * R1_2 + R1_4)*Ix2y2
+                + (6 * R0_3 * R1 * x0 - 6 * R0 * R1_3 * x0 + 2 * R0_4 * y0 - 8 * R0_2 * R1_2 * y0 + 2 * R1_4 * y0)*Ix2y1
+                + (6 * R0_2 * R1_2 * x0_2 + 6 * R0_3 * R1 * x0 * y0 - 6 * R0 * R1_3 * x0 * y0 + R0_4 * y0_2 - 4 * R0_2 * R1_2 * y0_2 + R1_4 * y0_2)*Ix2y0
+                + (-2 * R0_3 * R1 + 2 * R0 * R1_3)*Ix1y3
+                + (2 * R0_4 * x0 - 8 * R0_2 * R1_2 * x0 + 2 * R1_4 * x0 - 6 * R0_3 * R1 * y0 + 6 * R0 * R1_3 * y0)*Ix1y2
+                + (6 * R0_3 * R1 * x0_2 - 6 * R0 * R1_3 * x0_2 + 4 * R0_4 * x0 * y0 - 16 * R0_2 * R1_2 * x0 * y0 + 4 * R1_4 * x0 * y0 - 6 * R0_3 * R1 * y0_2 + 6 * R0 * R1_3 * y0_2)*Ix1y1
+                + (4 * R0_2 * R1_2 * x0_3 + 6 * R0_3 * R1 * x0_2 * y0 - 6 * R0 * R1_3 * x0_2 * y0 + 2 * R0_4 * x0 * y0_2 - 8 * R0_2 * R1_2 * x0 * y0_2 + 2 * R1_4 * x0 * y0_2 - 2 * R0_3 * R1 * y0_3 + 2 * R0 * R1_3 * y0_3)*Ix1y0
+                + (R0_2 * R1_2)*Ix0y4
+                + (-2 * R0_3 * R1 * x0 + 2 * R0 * R1_3 * x0 + 4 * R0_2 * R1_2 * y0)*Ix0y3
+                + (R0_4 * x0_2 - 4 * R0_2 * R1_2 * x0_2 + R1_4 * x0_2 - 6 * R0_3 * R1 * x0 * y0 + 6 * R0 * R1_3 * x0 * y0 + 6 * R0_2 * R1_2 * y0_2)*Ix0y2
+                + (2 * R0_3 * R1 * x0_3 - 2 * R0 * R1_3 * x0_3 + 2 * R0_4 * x0_2 * y0 - 8 * R0_2 * R1_2 * x0_2 * y0 + 2 * R1_4 * x0_2 * y0 - 6 * R0_3 * R1 * x0 * y0_2 + 6 * R0 * R1_3 * x0 * y0_2 + 4 * R0_2 * R1_2 * y0_3)*Ix0y1
+                + (R0_2 * R1_2 * x0_4 + 2 * R0_3 * R1 * x0_3 * y0 - 2 * R0 * R1_3 * x0_3 * y0 + R0_4 * x0_2 * y0_2 - 4 * R0_2 * R1_2 * x0_2 * y0_2 + R1_4 * x0_2 * y0_2 - 2 * R0_3 * R1 * x0 * y0_3 + 2 * R0 * R1_3 * x0 * y0_3 + R0_2 * R1_2 * y0_4)*Ix0y0;
     }
 
-    void computeTriangleIntegral(const double mg0, const double mg1, const double cg0, const double cg1,
-                      const double x0, const double x1, const double R0, const double R1, const cdouble a1, Triangle& t){
-        cdouble logarg = (a1 * (x0 - x1)) / (1.0 + a1 * x1);
-        cdouble logfac = 0.5*log1p(((a1.real()*a1.real() + a1.imag()*a1.imag())*(x0*x0 -x1*x1) +
-                2.0*a1.real()*(x0 - x1)) /(1.0 + (a1.real()*a1.real() + a1.imag()*a1.imag())*x1*x1 +
-                2.0*a1.real()*x1)) + I*atan2(logarg.imag(), 1.0+logarg.real());
-        cdouble a1_2, a1_3, a1_4, a1_5, a1_6, a1_7, a1_8;
-        cdouble o1_a1, o1_a1_2, o1_a1_3, o1_a1_4, o1_a1_5, o1_a1_6;
-        cdouble logfac_a1, logfac_a1_2, logfac_a1_3, logfac_a1_4, logfac_a1_5, logfac_a1_6;
-        double x0_2, x0_3, x0_4, x0_5;
-        double x1_2, x1_3, x1_4, x1_5;
-        double R0_2, R1_2, R0_3, R1_3, R0_4, R1_4;
-        double mg0_2, mg1_2, mg0_3, mg1_3, mg0_4, mg1_4, mg0_5, mg1_5;
-        double cg0_2, cg1_2, cg0_3, cg1_3, cg0_4, cg1_4, cg0_5, cg1_5;
-        a1_2 = a1 * a1;
-        a1_3 = a1_2 * a1;
-        a1_4 = a1_3 * a1;
-        a1_5 = a1_4 * a1;
-        a1_6 = a1_5 * a1;
-        a1_7 = a1_6 * a1;
-        a1_8 = a1_7 * a1;
-        o1_a1 = 1.0/a1;
-        o1_a1_2 = o1_a1*o1_a1;
-        o1_a1_3 = o1_a1_2*o1_a1;
-        o1_a1_4 = o1_a1_3*o1_a1;
-        o1_a1_5 = o1_a1_4*o1_a1;
-        o1_a1_6 = o1_a1_5*o1_a1;
-        logfac_a1 = logfac*o1_a1;
-        logfac_a1_2 = logfac*o1_a1_2;
-        logfac_a1_3 = logfac*o1_a1_3;
-        logfac_a1_4 = logfac*o1_a1_4;
-        logfac_a1_5 = logfac*o1_a1_5;
-        logfac_a1_6 = logfac*o1_a1_6;
-        x0_2 = x0*x0;
-        x0_3 = x0*x0_2;
-        x0_4 = x0*x0_3;
-        x0_5 = x0*x0_4;
-        x1_2 = x1*x1;
-        x1_3 = x1*x1_2;
-        x1_4 = x1*x1_3;
-        x1_5 = x1*x1_4;
-        R0_2 = R0*R0;
-        R0_3 = R0_2*R0;
-        R0_4 = R0_3*R0;
-        R1_2 = R1*R1;
-        R1_3 = R1_2*R1;
-        R1_4 = R1_3*R1;
-        mg0_2 = mg0*mg0;
-        mg0_3 = mg0_2*mg0;
-        mg0_4 = mg0_3*mg0;
-        mg0_5 = mg0_4*mg0;
-        mg1_2 = mg1*mg1;
-        mg1_3 = mg1_2*mg1;
-        mg1_4 = mg1_3*mg1;
-        mg1_5 = mg1_4*mg1;
-        cg0_2 = cg0*cg0;
-        cg0_3 = cg0_2*cg0;
-        cg0_4 = cg0_3*cg0;
-        cg0_5 = cg0_4*cg0;
-        cg1_2 = cg1*cg1;
-        cg1_3 = cg1_2*cg1;
-        cg1_4 = cg1_3*cg1;
-        cg1_5 = cg1_4*cg1;
 
-
-        t.p0 = logfac_a1 * (cg0 - cg1)  +
-                logfac_a1_2 * (-mg0 + mg1) +
-                o1_a1 * ((mg0 - mg1) * (x0 - x1));
-                
-        t.p1 = logfac_a1 * ((-cg0_2 + cg1_2) * R1*0.5) +
-                logfac_a1_2 * ((-cg0 * R0 + cg1 * R0 + cg0 * mg0 * R1 - cg1 * mg1 * R1)) -
-                logfac_a1_3 * (((mg0 - mg1) * (-2 * R0 + (mg0 + mg1) * R1))*0.5) +
-                o1_a1 * ((x0 - x1) * (4 * cg0 * (R0 - mg0 * R1) - 4 * cg1 * (R0 - mg1 * R1) - (mg0 - mg1) * (-2 * R0 + (mg0 + mg1) * R1) * (x0 + x1)))*0.25 +
-                o1_a1_2 * (((mg0 - mg1) * (-2 * R0 + (mg0 + mg1) * R1) * (x0 - x1))*0.5);
-
-        t.p2 = logfac_a1 * ((cg0_3 - cg1_3) * R1_2*(1.0/3.0)) +
-                logfac_a1_2 * (R1 * (cg0_2 * (R0 - mg0 * R1) + cg1_2 * (-R0 + mg1 * R1))) +
-                logfac_a1_3 * ((cg0 * (R0 - mg0 * R1)*(R0 - mg0 * R1) - cg1 * (R0 - mg1 * R1)*(R0 - mg1 * R1))) +
-                logfac_a1_4 * ((mg0 - mg1) * (3 * R0_2 - 3 * (mg0 + mg1) * R0 * R1 + (mg0_2 + mg0 * mg1 + mg1_2) * R1_2)*(-1.0/3.0)) +
-                o1_a1_3 * (((mg0 - mg1) * (3 * R0_2 - 3 * (mg0 + mg1) * R0 * R1 + (mg0_2 + mg0 * mg1 + mg1_2) * R1_2) * (x0 - x1))*(1.0/3.0)) +
-                o1_a1_2 * ((x0 - x1) * (6 * cg0 * (R0 - mg0 * R1)*(R0 - mg0 * R1) -
-                6 * cg1 * (R0 - mg1 * R1) * (R0 - mg1 * R1) + (mg0 - mg1) * (3 * R0_2 -
-                3 * (mg0 + mg1) * R0 * R1 + (mg0_2 + mg0 * mg1 + mg1_2) * R1_2) * (x0 + x1)) * (-1.0/6.0)) +
-                o1_a1 * ((1.0/18.0) * (x0 - x1) * (18 * cg0_2 * R1 * (-R0 + mg0 * R1) +
-                18 * cg1_2 * R1 * (R0 - mg1 * R1) + 9 * cg0 * (R0 - mg0 * R1)*(R0 - mg0 * R1) * (x0 + x1) -
-                9 * cg1 * (R0 - mg1 * R1) * (R0 - mg1 * R1) * (x0 + x1) +
-                2 * (mg0 - mg1) * (3 * R0_2 -
-                3 * (mg0 + mg1) * R0 * R1 + (mg0_2 + mg0 * mg1 + mg1_2) * R1_2) * (x0_2 + x0 * x1 + x1_2)));
-
-        t.p3 = logfac_a1*(((cg0 - cg1) * (cg0 + cg1) * R0) * 0.5) +
-                logfac_a1_2 * (-cg0 * (mg0 * R0 + R1) + cg1 * (mg1 * R0 + R1)) +
-                logfac_a1_3 * ((mg0 - mg1) * ((mg0 + mg1) * R0 + 2 * R1) * 0.5) +
-                o1_a1_2 * ((mg0 - mg1) * ((mg0 + mg1) * R0 + 2 * R1) * (x0 - x1)*-0.5) +
-                o1_a1 * (((x0 - x1) * (4 * cg0 * (mg0 * R0 + R1) -
-                4 * cg1 * (mg1 * R0 + R1) + (mg0 - mg1) * ((mg0 + mg1) * R0 + 2 * R1) * (x0 +
-                x1)))*0.25);
-
-        t.p4 = logfac_a1 * (((-cg0_3 + cg1_3) * R0 * R1) * (1.0/3.0)) +
-                logfac_a1_4 * ((mg0 - mg1) * (-3 * (mg0 + mg1) * R0_2 +
-                2 * (-3 + mg0_2 + mg0 * mg1 + mg1_2) * R0 * R1 + 3 * (mg0 + mg1) * R1_2)*(1.0/6.0)) +
-                logfac_a1_3 * (-cg0 * (mg0 * R0 + R1) * (-R0 + mg0 * R1) +
-                cg1 * (mg1 * R0 + R1) * (-R0 + mg1 * R1)) +
-                logfac_a1_2 * ((cg1_2 * (R0_2 - 2 * mg1 * R0 * R1 - R1_2) +
-                cg0_2 * (-R0_2 + 2 * mg0 * R0 * R1 + R1_2))*0.5) +
-                o1_a1_3 * (- ((mg0 - mg1) * (-3 * (mg0 + mg1) * R0_2 +
-                2 * (-3 + mg0_2 + mg0 * mg1 + mg1_2) * R0 * R1 + 3 * (mg0 + mg1) * R1_2) * (x0 -
-                x1)) * (1.0/6.0)) +
-                o1_a1_2 * ((1.0/12.0) * (x0 - x1) * (12 * cg0 * (mg0 * R0 + R1) * (-R0 + mg0 * R1) -
-                12 * cg1 * (mg1 * R0 + R1) * (-R0 + mg1 * R1) + (mg0 -
-                mg1) * (-3 * (mg0 + mg1) * R0_2 +
-                2 * (-3 + mg0_2 + mg0 * mg1 + mg1_2) * R0 * R1 +
-                3 * (mg0 + mg1) * R1_2) * (x0 + x1))) +
-                o1_a1*((1.0/18.0) * (x0 - x1) * (9 * cg0_2 * (R0_2 - 2 * mg0 * R0 * R1 - R1_2) +
-                9 * cg1_2 * (-R0_2 + 2 * mg1 * R0 * R1 + R1_2) -
-                9 * cg0 * (mg0 * R0 + R1) * (-R0 + mg0 * R1) * (x0 + x1) +
-                9 * cg1 * (mg1 * R0 + R1) * (-R0 + mg1 * R1) * (x0 + x1) - (mg0 -
-                mg1) * (-3 * (mg0 + mg1) * R0_2 +
-                2 * (-3 + mg0_2 + mg0 * mg1 + mg1_2) * R0 * R1 +
-                3 * (mg0 + mg1) * R1_2) * (x0_2 + x0 * x1 + x1_2)));
-
-        t.p5 = logfac_a1 * (((cg0_4 - cg1_4) * R0 * R1_2)*0.25) +
-                logfac_a1_5 * (1.0/12.0) * (6 * (mg0 - mg1) * (mg0 + mg1) * R0_3 +
-                4 * (3 * mg0 - 2 * mg0_3 - 3 * mg1 + 2 * mg1_3) * R0_2 * R1 +
-                3 * (mg0 - mg1) * (mg0 + mg1) * (-4 + mg0_2 + mg1_2) * R0 * R1_2 +
-                4 * (mg0_3 - mg1_3) * R1_3) +
-                logfac_a1_4 * - ((cg0 * (mg0 * R0 + R1) * (R0 - mg0 * R1) * (R0 - mg0 * R1) -
-                cg1 * (mg1 * R0 + R1) * (R0 - mg1 * R1)*(R0 - mg1 * R1))) +
-                logfac_a1_3 * (((cg0_2 * (R0 - mg0 * R1) * (R0_2 - 3 * mg0 * R0 * R1 - 2 * R1_2) -
-                cg1_2 * (R0 - mg1 * R1) * (R0_2 - 3 * mg1 * R0 * R1 - 2 * R1_2)))*0.5) +
-                logfac_a1_2 * ((R1 * (cg0_3 * (2 * R0_2 - 3 * mg0 * R0 * R1 - R1_2) +
-                cg1_3 * (-2 * R0_2 + 3 * mg1 * R0 * R1 + R1_2)))*(1.0/3.0)) +
-                o1_a1_4 * (- (1.0/12.0) * (mg0 - mg1) * (6 * (mg0 + mg1) * R0_3 -
-                4 * (-3 + 2 * (mg0_2 + mg0 * mg1 + mg1_2)) * R0_2 * R1 +
-                3 * (mg0 + mg1) * (-4 + mg0_2 + mg1_2) * R0 * R1_2 +
-                4 * (mg0_2 + mg0 * mg1 + mg1_2) * R1_3) * (x0 - x1)) +
-                o1_a1_3 * ((1.0/24.0) * (x0 - x1) * (24 * cg0 * (mg0 * R0 + R1) * (R0 - mg0 * R1)*(R0 - mg0 * R1) -
-                24 * cg1 * (mg1 * R0 + R1) * (R0 - mg1 * R1) * (R0 - mg1 * R1) + (mg0 -
-                mg1) * (6 * (mg0 + mg1) * R0_3 -
-                4 * (-3 + 2 * (mg0_2 + mg0 * mg1 + mg1_2)) * R0_2 * R1 +
-                3 * (mg0 + mg1) * (-4 + mg0_2 + mg1_2) * R0 * R1_2 +
-                4 * (mg0_2 + mg0 * mg1 + mg1_2) * R1_3) * (x0 + x1))) +
-                o1_a1_2 * (-(1.0/36.0) * (x0 - x1) * (18 * cg0_2 * (R0 - mg0 * R1) * (R0_2 - 3 * mg0 * R0 * R1 - 2 * R1_2) -
-                18 * cg1_2 * (R0 - mg1 * R1) * (R0_2 - 3 * mg1 * R0 * R1 - 2 * R1_2) +
-                18 * cg0 * (mg0 * R0 + R1) * (R0 - mg0 * R1) * (R0 - mg0 * R1) * (x0 + x1) -
-                18 * cg1 * (mg1 * R0 + R1) * (R0 - mg1 * R1)*(R0 - mg1 * R1) * (x0 + x1) + (mg0 -
-                mg1) * (6 * (mg0 + mg1) * R0_3 - 4 * (-3 + 2 * (mg0_2 + mg0 * mg1 + mg1_2)) * R0_2 * R1 +
-                3 * (mg0 + mg1) * (-4 + mg0_2 + mg1_2) * R0 * R1_2 +
-                4 * (mg0_2 + mg0 * mg1 + mg1_2) * R1_3) * (x0_2 + x0 * x1 + x1_2))) +
-                o1_a1 * ((1.0/48.0) * (16 * cg0_3 * R1 * (-2 * R0_2 + 3 * mg0 * R0 * R1 + R1_2) * (x0 - x1) -
-                16 * cg1_3 * R1 * (-2 * R0_2 + 3 * mg1 * R0 * R1 + R1_2) * (x0 - x1) +
-                12 * cg0_2 * (R0 - mg0 * R1) * (R0_2 - 3 * mg0 * R0 * R1 - 2 * R1_2) * (x0 -
-                x1) * (x0 + x1) - 12 * cg1_2 * (R0 - mg1 * R1) * (R0_2 - 3 * mg1 * R0 * R1 - 2 * R1_2) * (x0 -
-                x1) * (x0 + x1) + 16 * cg0 * (mg0 * R0 + R1) * (R0 - mg0 * R1)*(R0 - mg0 * R1) * (x0_3 - x1_3) -
-                16 * cg1 * (mg1 * R0 + R1) * (R0 - mg1 * R1)*(R0 - mg1 * R1) * (x0_3 - x1_3) + (mg0 -
-                mg1) * (6 * (mg0 + mg1) * R0_3 - 4 * (-3 + 2 * (mg0_2 + mg0 * mg1 + mg1_2)) * R0_2 * R1 +
-                3 * (mg0 + mg1) * (-4 + mg0_2 + mg1_2) * R0 * R1_2 +
-                4 * (mg0_2 + mg0 * mg1 + mg1_2) * R1_3) * (x0_4 - x1_4)));
-
-        t.p6 = logfac_a1 * ((cg0_3 - cg1_3) * R0_2*(1.0/3.0)) +
-                logfac_a1_4 * (-(1.0/3.0) * ((mg0 - mg1) * ((mg0_2 + mg0 * mg1 + mg1_2) * R0_2 +
-                3 * (mg0 + mg1) * R0 * R1 + 3 * R1_2))) +
-                logfac_a1_2 * (R0 * (-cg0_2 * (mg0 * R0 + R1) + cg1_2 * (mg1 * R0 + R1))) +
-                logfac_a1_3 * ((cg0 * (mg0 * R0 + R1) * (mg0 * R0 + R1) - cg1 * (mg1 * R0 + R1) * (mg1 * R0
-                + R1))) +
-                o1_a1_3 * (((mg0 - mg1) * ((mg0_2 + mg0 * mg1 + mg1_2) * R0_2 + 3 * (mg0 + mg1) * R0 * R1 +
-                3 * R1_2) * (x0 - x1)) * (1.0/3.0)) +
-                o1_a1_2 * (- (1.0/6.0) * (x0 - x1) * (6 * cg0 * (mg0 * R0 + R1) * (mg0 * R0 + R1) -
-                6 * cg1 * (mg1 * R0 + R1) * (mg1 * R0 + R1) + (mg0 -
-                mg1) * ((mg0_2 + mg0 * mg1 + mg1_2) * R0_2 + 3 * (mg0 + mg1) * R0 * R1 +
-                3 * R1_2) * (x0 + x1))) +
-                o1_a1 * ((1.0/18.0) * (x0 - x1) * (18 * cg0_2 * R0 * (mg0 * R0 + R1) -
-                18 * cg1_2 * R0 * (mg1 * R0 + R1) + 9 * cg0 * (mg0 * R0 + R1)*(mg0 * R0 + R1) * (x0 + x1) -
-                9 * cg1 * (mg1 * R0 + R1) * (mg1 * R0 + R1) * (x0 + x1) +
-                2 * (mg0 - mg1) * ((mg0_2 + mg0 * mg1 + mg1_2) * R0_2 +
-                3 * (mg0 + mg1) * R0 * R1 + 3 * R1_2) * (x0_2 + x0 * x1 + x1_2)));
-
-        t.p7 = logfac_a1 * (((-cg0_4 + cg1_4) * R0_2 * R1)*0.25) +
-                logfac_a1_5 * ((1.0/12.0) * (4 * (mg0_3 - mg1_3) * R0_3 -
-                3 * (mg0 - mg1) * (mg0 + mg1) * (-4 + mg0_2 + mg1_2) * R0_2 * R1 +
-                4 * (3 * mg0 - 2 * mg0_3 - 3 * mg1 + 2 * mg1_3) * R0 * R1_2 +
-                6 * (-mg0_2 + mg1_2) * R1_3)) +
-                logfac_a1_4 * ((cg0 * (mg0 * R0 + R1) * (mg0 * R0 + R1) * (-R0 + mg0 * R1) -
-                cg1 * (mg1 * R0 + R1) * (mg1 * R0 + R1) * (-R0 + mg1 * R1))) +
-                logfac_a1_3 * (((-cg0_2 * (mg0 * R0 + R1) * (-2 * R0_2 + 3 * mg0 * R0 * R1 + R1_2) +
-                cg1_2 * (mg1 * R0 + R1) * (-2 * R0_2 + 3 * mg1 * R0 * R1 + R1_2)))*0.5) +
-                logfac_a1_2 * ((R0 * (cg1_3 * (R0_2 - 3 * mg1 * R0 * R1 - 2 * R1_2) +
-                cg0_3 * (-R0_2 + 3 * mg0 * R0 * R1 + 2 * R1_2))) * (1.0/3.0)) +
-                o1_a1_4 * ((1.0/12.0) * (mg0 - mg1) * (-4 * (mg0_2 + mg0 * mg1 + mg1_2) * R0_3 +
-                3 * (mg0 + mg1) * (-4 + mg0_2 + mg1_2) * R0_2 * R1 +
-                4 * (-3 + 2 * (mg0_2 + mg0 * mg1 + mg1_2)) * R0 * R1_2 +
-                6 * (mg0 + mg1) * R1_3) * (x0 - x1)) +
-                o1_a1_3 * ((-1.0/24.0) * (x0 - x1) * (24 * cg0 * (mg0 * R0 + R1)*(mg0 * R0 + R1) * (-R0 + mg0 * R1) -
-                24 * cg1 * (mg1 * R0 + R1) * (mg1 * R0 + R1) * (-R0 + mg1 * R1) + (mg0 -
-                mg1) * (-4 * (mg0_2 + mg0 * mg1 + mg1_2) * R0_3 +
-                3 * (mg0 + mg1) * (-4 + mg0_2 + mg1_2) * R0_2 * R1 +
-                4 * (-3 + 2 * (mg0_2 + mg0 * mg1 + mg1_2)) * R0 * R1_2 +
-                6 * (mg0 + mg1) * R1_3) * (x0 + x1))) +
-                o1_a1_2 * ((1.0/36.0) * (x0 - x1) * (18 * cg0_2 * (mg0 * R0 + R1) * (-2 * R0_2 + 3 * mg0 * R0 * R1 + R1_2) -
-                18 * cg1_2 * (mg1 * R0 + R1) * (-2 * R0_2 + 3 * mg1 * R0 * R1 + R1_2) +
-                18 * cg0 * (mg0 * R0 + R1) * (mg0 * R0 + R1) * (-R0 + mg0 * R1) * (x0 + x1) -
-                18 * cg1 * (mg1 * R0 + R1) * (mg1 * R0 + R1) * (-R0 + mg1 * R1) * (x0 + x1) + (mg0 -
-                mg1) * (-4 * (mg0_2 + mg0 * mg1 + mg1_2) * R0_3 +
-                3 * (mg0 + mg1) * (-4 + mg0_2 + mg1_2) * R0_2 * R1 +
-                4 * (-3 + 2 * (mg0_2 + mg0 * mg1 + mg1_2)) * R0 * R1_2 +
-                6 * (mg0 + mg1) * R1_3) * (x0_2 + x0 * x1 + x1_2))) +
-                o1_a1 * ((1.0/48.0) * (16 * cg0_3 * R0 * (R0_2 - 3 * mg0 * R0 * R1 - 2 * R1_2) * (x0 - x1) -
-                16 * cg1_3 * R0 * (R0_2 - 3 * mg1 * R0 * R1 - 2 * R1_2) * (x0 - x1) -
-                12 * cg0_2 * (mg0 * R0 + R1) * (-2 * R0_2 + 3 * mg0 * R0 * R1 + R1_2) * (x0 -
-                x1) * (x0 + x1) +
-                12 * cg1_2 * (mg1 * R0 + R1) * (-2 * R0_2 + 3 * mg1 * R0 * R1 + R1_2) * (x0 -
-                x1) * (x0 + x1) -
-                16 * cg0 * (mg0 * R0 + R1)*(mg0 * R0 + R1) * (-R0 + mg0 * R1) * (x0_3 - x1_3) +
-                16 * cg1 * (mg1 * R0 + R1)*(mg1 * R0 + R1) * (-R0 + mg1 * R1) * (x0_3 - x1_3) - (mg0 -
-                mg1) * (-4 * (mg0_2 + mg0 * mg1 + mg1_2) * R0_3 +
-                3 * (mg0 + mg1) * (-4 + mg0_2 + mg1_2) * R0_2 * R1 +
-                4 * (-3 + 2 * (mg0_2 + mg0 * mg1 + mg1_2)) * R0 * R1_2 +
-                6 * (mg0 + mg1) * R1_3) * (x0_4 - x1_4)));
-
-
-        t.p8 = logfac_a1 * (((cg0_5 - cg1_5) * R0_2 * R1_2)*0.2) +
-                logfac_a1_6 * ((1.0/30.0) * (10 * (-mg0_3 + mg1_3) * R0_4 +
-                15 * (mg0 - mg1) * (mg0 + mg1) * (-2 + mg0_2 + mg1_2) * R0_3 * R1 +
-                2 * (-15 * mg0 + 20 * mg0_3 - 3 * mg0_5 + 15 * mg1 - 20 * mg1_3 +
-                3 * mg1_5) * R0_2 * R1_2 - 15 * (mg0 - mg1) * (mg0 + mg1) * (-2 + mg0_2 + mg1_2) * R0 * R1_3 +
-                10 * (-mg0_3 + mg1_3) * R1_4)) +
-                logfac_a1_5 * ((cg0 * (mg0 * R0 + R1) * (mg0 * R0 + R1) * (R0 - mg0 * R1) * (R0 - mg0 * R1) -
-                cg1 * (mg1 * R0 + R1) * (mg1 * R0 + R1) * (R0 - mg1 * R1) * (R0 - mg1 * R1))) +
-                logfac_a1_2 * ((R0 * R1 * (cg0_4 * (R0_2 - 2 * mg0 * R0 * R1 - R1_2) +
-                cg1_4 * (-R0_2 + 2 * mg1 * R0 * R1 + R1_2)))*0.5) +
-                logfac_a1_4 * (-cg0_2 * (mg0 * R0 + R1) * (-R0 + mg0 * R1) * (-R0_2 + 2 * mg0 * R0 * R1 +
-                R1_2) + cg1_2 * (mg1 * R0 + R1) * (-R0 + mg1 * R1) * (-R0_2 +
-                2 * mg1 * R0 * R1 + R1_2)) +
-                logfac_a1_3 * ((1.0/3.0) * (cg0_3 * (R0_4 - 6 * mg0 * R0_3 * R1 + 2 * (-2 + 3 * mg0_2) * R0_2 * R1_2 +
-                6 * mg0 * R0 * R1_3 + R1_4) -
-                cg1_3 * (R0_4 - 6 * mg1 * R0_3 * R1 + 2 * (-2 + 3 * mg1_2) * R0_2 * R1_2 +
-                6 * mg1 * R0 * R1_3 + R1_4))) +
-                o1_a1_5 * ((1.0/30.0) * (mg0 - mg1) * (10 * (mg0_2 + mg0 * mg1 + mg1_2) * R0_4 -
-                15 * (mg0 + mg1) * (-2 + mg0_2 + mg1_2) * R0_3 * R1 +
-                2 * (15 + 3 * mg0_4 + 3 * mg0_3 * mg1 - 20 * mg1_2 + 3 * mg1_4 +
-                mg0_2 * (-20 + 3 * mg1_2) + mg0 * mg1 * (-20 + 3 * mg1_2)) * R0_2 * R1_2 +
-                15 * (mg0 + mg1) * (-2 + mg0_2 + mg1_2) * R0 * R1_3 +
-                10 * (mg0_2 + mg0 * mg1 + mg1_2) * R1_4) * (x0 - x1)) +
-                o1_a1_4 * ((-1.0/60.0) * (x0 - x1) * (60 * cg0 * (mg0 * R0 + R1)*(mg0 * R0 + R1) * (R0 - mg0 * R1)*(R0 - mg0 * R1) -
-                60 * cg1 * (mg1 * R0 + R1)*(mg1 * R0 + R1) * (R0 - mg1 * R1) * (R0 - mg1 * R1) + (mg0 -
-                mg1) * (10 * (mg0_2 + mg0 * mg1 + mg1_2) * R0_4 -
-                15 * (mg0 + mg1) * (-2 + mg0_2 + mg1_2) * R0_3 * R1 +
-                2 * (15 - 20 * mg0_2 + 3 * mg0_4 +
-                mg0 * (-20 + 3 * mg0_2) * mg1 + (-20 + 3 * mg0_2) * mg1_2 +
-                3 * mg0 * mg1_3 + 3 * mg1_4) * R0_2 * R1_2 +
-                15 * (mg0 + mg1) * (-2 + mg0_2 + mg1_2) * R0 * R1_3 +
-                10 * (mg0_2 + mg0 * mg1 + mg1_2) * R1_4) * (x0 + x1))) +
-                o1_a1_3 * ((1.0/90.0) * (x0 -
-                x1) * (90 * cg0_2 * (mg0 * R0 + R1) * (-R0 + mg0 * R1) * (-R0_2 + 2 * mg0 * R0 * R1 +
-                R1_2) - 90 * cg1_2 * (mg1 * R0 + R1) * (-R0 + mg1 * R1) * (-R0_2 +
-                2 * mg1 * R0 * R1 + R1_2) +
-                45 * cg0 * (mg0 * R0 + R1)*(mg0 * R0 + R1) * (R0 - mg0 * R1) * (R0 - mg0 * R1) * (x0 + x1) -
-                45 * cg1 * (mg1 * R0 + R1) * (mg1 * R0 + R1) * (R0 - mg1 * R1) * (R0 - mg1 * R1) * (x0 + x1) + (mg0 -
-                mg1) * (10 * (mg0_2 + mg0 * mg1 + mg1_2) * R0_4 -
-                15 * (mg0 + mg1) * (-2 + mg0_2 + mg1_2) * R0_3 * R1 +
-                2 * (15 - 20 * mg0_2 + 3 * mg0_4 +
-                mg0 * (-20 + 3 * mg0_2) * mg1 + (-20 + 3 * mg0_2) * mg1_2 +
-                3 * mg0 * mg1_3 + 3 * mg1_4) * R0_2 * R1_2 +
-                15 * (mg0 + mg1) * (-2 + mg0_2 + mg1_2) * R0 * R1_3 +
-                10 * (mg0_2 + mg0 * mg1 + mg1_2) * R1_4) * (x0_2 + x0 * x1 + x1_2))) +
-                o1_a1_2 * ((1.0/120.0) * (-40 * cg0_3 * (R0_4 - 6 * mg0 * R0_3 * R1 +
-                2 * (-2 + 3 * mg0_2) * R0_2 * R1_2 + 6 * mg0 * R0 * R1_3 + R1_4) * (x0 - x1) +
-                40 * cg1_3 * (R0_4 - 6 * mg1 * R0_3 * R1 + 2 * (-2 + 3 * mg1_2) * R0_2 * R1_2 +
-                6 * mg1 * R0 * R1_3 + R1_4) * (x0 - x1) +
-                60 * cg1_2 * (mg1 * R0 + R1) * (-R0 + mg1 * R1) * (-R0_2 + 2 * mg1 * R0 * R1 +
-                R1_2) * (x0 - x1) * (x0 + x1) +
-                60 * cg0_2 * (mg0 * R0 + R1) * (-R0 + mg0 * R1) * (-R0_2 + 2 * mg0 * R0 * R1 +
-                R1_2) * (-x0_2 + x1_2) - 40 * cg0 * (mg0 * R0 + R1) * (mg0 * R0 + R1) * (R0 - mg0 * R1) * (R0 - mg0 * R1) * (x0_3 - x1_3) +
-                40 * cg1 * (mg1 * R0 + R1) * (mg1 * R0 + R1) * (R0 - mg1 * R1) * (R0 - mg1 * R1) * (x0_3 - x1_3) - (mg0 -
-                mg1) * (10 * (mg0_2 + mg0 * mg1 + mg1_2) * R0_4 -
-                15 * (mg0 + mg1) * (-2 + mg0_2 + mg1_2) * R0_3 * R1 +
-                2 * (15 + 3 * mg0_4 + 3 * mg0_3 * mg1 - 20 * mg1_2 + 3 * mg1_4 +
-                mg0_2 * (-20 + 3 * mg1_2) + mg0 * mg1 * (-20 + 3 * mg1_2)) * R0_2 * R1_2 +
-                15 * (mg0 + mg1) * (-2 + mg0_2 + mg1_2) * R0 * R1_3 +
-                10 * (mg0_2 + mg0 * mg1 + mg1_2) * R1_4) * (x0_4 - x1_4))) +
-                o1_a1 * ((1.0/300.0) * (-150 * cg0_4 * R0 * R1 * (R0_2 - 2 * mg0 * R0 * R1 - R1_2) * (x0 - x1) +
-                150 * cg1_4 * R0 * R1 * (R0_2 - 2 * mg1 * R0 * R1 - R1_2) * (x0 - x1) +
-                50 * cg0_3 * (R0_4 - 6 * mg0 * R0_3 * R1 + 2 * (-2 + 3 * mg0_2) * R0_2 * R1_2 +
-                6 * mg0 * R0 * R1_3 + R1_4) * (x0 - x1) * (x0 + x1) -
-                50 * cg1_3 * (R0_4 - 6 * mg1 * R0_3 * R1 + 2 * (-2 + 3 * mg1_2) * R0_2 * R1_2 +
-                6 * mg1 * R0 * R1_3 + R1_4) * (x0 - x1) * (x0 + x1) +
-                100 * cg0_2 * (mg0 * R0 + R1) * (-R0 + mg0 * R1) * (-R0_2 + 2 * mg0 * R0 * R1 +
-                R1_2) * (x0_3 - x1_3) +
-                100 * cg1_2 * (mg1 * R0 + R1) * (-R0 + mg1 * R1) * (-R0_2 + 2 * mg1 * R0 * R1 +
-                R1_2) * (-x0_3 + x1_3) +
-                75 * cg0 * (mg0 * R0 + R1) * (mg0 * R0 + R1) * (R0 - mg0 * R1) * (R0 - mg0 * R1) * (x0_4 - x1_4) -
-                75 * cg1 * (mg1 * R0 + R1) * (mg1 * R0 + R1) * (R0 - mg1 * R1) * (R0 - mg1 * R1) * (x0_4 - x1_4) +
-                2 * (mg0 - mg1) * (10 * (mg0_2 + mg0 * mg1 + mg1_2) * R0_4 -
-                15 * (mg0 + mg1) * (-2 + mg0_2 + mg1_2) * R0_3 * R1 +
-                2 * (15 + 3 * mg0_4 + 3 * mg0_3 * mg1 - 20 * mg1_2 + 3 * mg1_4 +
-                mg0_2 * (-20 + 3 * mg1_2) + mg0 * mg1 * (-20 + 3 * mg1_2)) * R0_2 * R1_2 +
-                15 * (mg0 + mg1) * (-2 + mg0_2 + mg1_2) * R0 * R1_3 +
-                10 * (mg0_2 + mg0 * mg1 + mg1_2) * R1_4) * (x0_5 - x1_5)));
-
-    }
 
 };
 
@@ -990,12 +768,12 @@ public://TODO: private later
 
     array<array<cdouble, 3>, 3> push_omega(const double kpara, const double wr, const double wi) {
         array<array<cdouble, 3>, 3> X;
-        cdouble X00{0.0, 0.0}, X01{0.0, 0.0}, X02{0.0, 0.0}, X11{0.0, 0.0}, X12{0.0, 0.0}, X22{0.0, 0.0};
+        cdouble X00{0.0, 0.0}, X01{0.0, 0.0}, x0_2{0.0, 0.0}, X11{0.0, 0.0}, x1_2{0.0, 0.0}, X22{0.0, 0.0};
         const cdouble w = wr + I*wi;
         const cdouble iw = 1.0/w;
         for (size_t k=0;k<ns.size();k++){
             for (size_t ai=0;ai<n_taylor;ai++){
-                if (fabs(a_mins[k] + ai*das[k] + wr)<20*damaxs[k][ai]){
+                if (fabs(a_mins[k] + ai*das[k] + wr)<10*damaxs[k][ai]){
                     const int n = ns[k];
                     //cout<<series.mapping[k].size()<<endl;
                     for (pair<size_t, size_t> p:series.mapping[k][ai]){
@@ -1013,12 +791,12 @@ public://TODO: private later
                         X00 += integrator.evaluate(i, j, U2, kp0[k], kpara)*iw;
                         X01 += integrator.evaluate(i, j, U0, kp1[k], 1.0);
                         X01 += integrator.evaluate(i, j, U2, kp1[k], kpara)*iw;
-                        X02 += integrator.evaluate(i, j, U1, kp2[k], 1.0);
-                        X02 += integrator.evaluate(i, j, U3, kp2[k], kpara)*iw;
+                        x0_2 += integrator.evaluate(i, j, U1, kp2[k], 1.0);
+                        x0_2 += integrator.evaluate(i, j, U3, kp2[k], kpara)*iw;
                         X11 += integrator.evaluate(i, j, U0, kp3[k], 1.0);
                         X11 += integrator.evaluate(i, j, U2, kp3[k], kpara)*iw;
-                        X12 += integrator.evaluate(i, j, U1, kp4[k], 1.0);
-                        X12 += integrator.evaluate(i, j, U3, kp4[k], kpara)*iw;
+                        x1_2 += integrator.evaluate(i, j, U1, kp4[k], 1.0);
+                        x1_2 += integrator.evaluate(i, j, U3, kp4[k], kpara)*iw;
                         X22 += integrator.evaluate(i, j, W0, kp5[k], 1.0);
                         X22 += integrator.evaluate(i, j, W1, kp5[k], n)*iw;
                     }
@@ -1030,24 +808,24 @@ public://TODO: private later
                 X00+=series.evaluate(series.sX00b)*iw;
                 X01+=series.evaluate(series.sX01a);
                 X01+=series.evaluate(series.sX01b)*iw;
-                X02+=series.evaluate(series.sX02a);
-                X02+=series.evaluate(series.sX02b)*iw;
+                x0_2+=series.evaluate(series.sX02a);
+                x0_2+=series.evaluate(series.sX02b)*iw;
                 X11+=series.evaluate(series.sX11a);
                 X11+=series.evaluate(series.sX11b)*iw;
-                X12+=series.evaluate(series.sX12a);
-                X12+=series.evaluate(series.sX12b)*iw;
+                x1_2+=series.evaluate(series.sX12a);
+                x1_2+=series.evaluate(series.sX12b)*iw;
                 X22+=series.evaluate(series.sX22a);
                 X22+=series.evaluate(series.sX22b)*iw;
             }
         }
         X[0][0] = X00*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[0][1] = I*X01*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[0][2] = X02*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[0][2] = x0_2*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[1][0] = -I*X01*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[1][1] = X11*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[1][2] = I*X12*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[2][0] = -X02*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[2][1] = -I*X12*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[1][2] = I*x1_2*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[2][0] = -x0_2*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[2][1] = -I*x1_2*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[2][2] = X22*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
 //        cout<<1.0 + X[0][0]<<", "<<X[0][1]<<", "<<1.0 + X[1][1]<<", "<<1.0 + X[2][2]<<endl;
 //        cout<<X[0][0]<<", "<<X[0][1]<<", "<<X[1][1]<<", "<<X[2][2]<<endl;
