@@ -465,7 +465,6 @@ private:
         double y0_2 = y0 * y0;
         double y0_3 = y0 * y0_2;
         double y0_4 = y0 * y0_3;
-        double x1_2 = x1 * x1;
         double m0_2 = m0*m0;
         double m0_3 = m0_2*m0;
         double m0_4 = m0_3*m0;
