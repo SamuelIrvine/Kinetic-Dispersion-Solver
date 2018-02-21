@@ -214,16 +214,16 @@ public:
                                         30 * a1 * (c * c * Z4 + b * (b * Z5 - 20 * c * Z3 + 2 * d * Z7) + 2 * c * d * Z6) -
                                         3 * a1 * d*d * Z8 - 3 * b * (d*d * Z11 - 10 * c * c * Z6 + 2 * c * d * Z8) + 10 * b * b * b * Z10 +
                                         30 * b * b * (c * Z7 + d * Z9));
-        X.sum5[ni][ai]+=(1.0/12600.0) * (350 * a1*a1*a1*a1 * Z0 - 10 * b*b*b*b * Z15 +
-                                         14 * b * c * (-10 * c*c * Z13 + 3 * c * d * Z14 + 3 * d*d * Z18) +
-                                         2 * c*c * (-5 * c * (c * Z19 + 4 * d * Z20) + 3 * d*d * Z21) +
-                                         1400 * a1*a1*a1 * (b * Z1 + c * Z2 + d * Z3) +
-                                         3 * b*b * (2 * d * (7 * c * Z11 + d * Z17) + 7 * c*c * Z8) +
-                                         21 * a1*a1 * (-10 * (c*c * Z4 + b * (b * Z5 - 20 * c * Z3 + 2 * d * Z7) + 2 * c * d * Z6) +
-                                                       d*d * Z8) - 20 * b*b*b * (2 * d * Z16 + 7 * c * Z9) -
-                                         14 * a1 * (c * (10 * c * (c * Z12 + 3 * d * Z13) - 3 * d*d * Z14) -
-                                                    3 * b * (d*d * Z11 - 10 * c*c * Z6 + 2 * c * d * Z8) + 10 * b*b*b * Z10 +
-                                                    30 * b*b * (c * Z7 + d * Z9)));
+//        X.sum5[ni][ai]+=(1.0/12600.0) * (350 * a1*a1*a1*a1 * Z0 - 10 * b*b*b*b * Z15 +
+//                                         14 * b * c * (-10 * c*c * Z13 + 3 * c * d * Z14 + 3 * d*d * Z18) +
+//                                         2 * c*c * (-5 * c * (c * Z19 + 4 * d * Z20) + 3 * d*d * Z21) +
+//                                         1400 * a1*a1*a1 * (b * Z1 + c * Z2 + d * Z3) +
+//                                         3 * b*b * (2 * d * (7 * c * Z11 + d * Z17) + 7 * c*c * Z8) +
+//                                         21 * a1*a1 * (-10 * (c*c * Z4 + b * (b * Z5 - 20 * c * Z3 + 2 * d * Z7) + 2 * c * d * Z6) +
+//                                                       d*d * Z8) - 20 * b*b*b * (2 * d * Z16 + 7 * c * Z9) -
+//                                         14 * a1 * (c * (10 * c * (c * Z12 + 3 * d * Z13) - 3 * d*d * Z14) -
+//                                                    3 * b * (d*d * Z11 - 10 * c*c * Z6 + 2 * c * d * Z8) + 10 * b*b*b * Z10 +
+//                                                    30 * b*b * (c * Z7 + d * Z9)));
     }
 
     void pushW(cdouble w, const size_t ni, const size_t ai){
@@ -765,7 +765,7 @@ public://TODO: private later
 
     array<array<cdouble, 3>, 3> push_omega(const double kpara, const double wr, const double wi) {
         array<array<cdouble, 3>, 3> X;
-        cdouble X00{0.0, 0.0}, X01{0.0, 0.0}, x0_2{0.0, 0.0}, X11{0.0, 0.0}, x1_2{0.0, 0.0}, X22{0.0, 0.0};
+        cdouble X00{0.0, 0.0}, X01{0.0, 0.0}, x02{0.0, 0.0}, X11{0.0, 0.0}, x12{0.0, 0.0}, X22{0.0, 0.0};
         const cdouble w = wr + I*wi;
         const cdouble iw = 1.0/w;
         for (size_t k=0;k<ns.size();k++){
@@ -788,12 +788,12 @@ public://TODO: private later
                         X00 += integrator.evaluate(i, j, U2, kp0[k], kpara)*iw;
                         X01 += integrator.evaluate(i, j, U0, kp1[k], 1.0);
                         X01 += integrator.evaluate(i, j, U2, kp1[k], kpara)*iw;
-                        x0_2 += integrator.evaluate(i, j, U1, kp2[k], 1.0);
-                        x0_2 += integrator.evaluate(i, j, U3, kp2[k], kpara)*iw;
+                        x02 += integrator.evaluate(i, j, U1, kp2[k], 1.0);
+                        x02 += integrator.evaluate(i, j, U3, kp2[k], kpara)*iw;
                         X11 += integrator.evaluate(i, j, U0, kp3[k], 1.0);
                         X11 += integrator.evaluate(i, j, U2, kp3[k], kpara)*iw;
-                        x1_2 += integrator.evaluate(i, j, U1, kp4[k], 1.0);
-                        x1_2 += integrator.evaluate(i, j, U3, kp4[k], kpara)*iw;
+                        x12 += integrator.evaluate(i, j, U1, kp4[k], 1.0);
+                        x12 += integrator.evaluate(i, j, U3, kp4[k], kpara)*iw;
                         X22 += integrator.evaluate(i, j, W0, kp5[k], 1.0);
                         X22 += integrator.evaluate(i, j, W1, kp5[k], n)*iw;
                     }
@@ -805,24 +805,24 @@ public://TODO: private later
                 X00+=series.evaluate(series.sX00b)*iw;
                 X01+=series.evaluate(series.sX01a);
                 X01+=series.evaluate(series.sX01b)*iw;
-                x0_2+=series.evaluate(series.sX02a);
-                x0_2+=series.evaluate(series.sX02b)*iw;
+                x02+=series.evaluate(series.sX02a);
+                x02+=series.evaluate(series.sX02b)*iw;
                 X11+=series.evaluate(series.sX11a);
                 X11+=series.evaluate(series.sX11b)*iw;
-                x1_2+=series.evaluate(series.sX12a);
-                x1_2+=series.evaluate(series.sX12b)*iw;
+                x12+=series.evaluate(series.sX12a);
+                x12+=series.evaluate(series.sX12b)*iw;
                 X22+=series.evaluate(series.sX22a);
                 X22+=series.evaluate(series.sX22b)*iw;
             }
         }
         X[0][0] = X00*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[0][1] = I*X01*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[0][2] = x0_2*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[0][2] = x02*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[1][0] = -I*X01*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[1][1] = X11*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[1][2] = I*x1_2*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[2][0] = -x0_2*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[2][1] = -I*x1_2*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[1][2] = I*x12*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[2][0] = -x02*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[2][1] = -I*x12*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[2][2] = X22*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
 //        cout<<1.0 + X[0][0]<<", "<<X[0][1]<<", "<<1.0 + X[1][1]<<", "<<1.0 + X[2][2]<<endl;
 //        cout<<X[0][0]<<", "<<X[0][1]<<", "<<X[1][1]<<", "<<X[2][2]<<endl;
