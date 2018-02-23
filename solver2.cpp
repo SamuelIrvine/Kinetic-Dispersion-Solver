@@ -600,7 +600,7 @@ public://TODO: private later
         nperp_h = nperp_g*2 + 1;
         npara_h = npara_g*2 + 1;
 
-        n_taylor = 10000;
+        n_taylor = 1000;
 
         ppara_h = arr1d(npara_h, 0.0);
         pperp_h = arr1d(nperp_h, 0.0);
