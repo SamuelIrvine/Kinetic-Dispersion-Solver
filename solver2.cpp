@@ -206,7 +206,7 @@ public:
         double Z21 = (3 * z0 - 36 * z1 - 27 * z2 - 20 * z3 + 240 * z4 + 180 * z5 - 25 * z6 + 300 * z7 + 225 * z8);
 
         X.sum1[ni][ai]+=Z0*(1.0/36.0);
-        X.sum2[ni][ai]+=-(1.0/36.0) * (a1 * Z0 + 0.0*b * Z1 + 0.0*c * Z2 + 0.0*d * Z3);
+        X.sum2[ni][ai]+=-(1.0/36.0) * (a1 * Z0 + b * Z1 + c * Z2 + d * Z3);
 //        X.sum3[ni][ai]+=(1.0/3600.0) * (100 * a1*a1 * Z0 + 200 * a1 * (b * Z1 + c * Z2 + d * Z3) -
 //                                        10 * (c*c * Z4 + b * (b * Z5 - 20 * c * Z3 + 2 * d * Z7) + 2 * c * d * Z6) + d * d * Z8);
 //        X.sum4[ni][ai]+=(1.0/3600.0) * (-100 * a1*a1*a1 * Z0 + c * (10 * c * (c * Z12 + 3 * d * Z13) - 3 * d * d * Z14) -
@@ -667,7 +667,6 @@ public://TODO: private later
                 U3[i][j] = ppara_h[j]*(pperp_h[i]*df_dppara_h[i][j] - ppara_h[j]*df_dpperp_h[i][j])*igamma[i][j]*igamma[i][j]*(1.0/mass);
                 W0[i][j] = ppara_h[j]*pperp_h[i]*df_dppara_h[i][j]*igamma[i][j];
                 W1[i][j] = wc0*ppara_h[j]*(ppara_h[j]*df_dpperp_h[i][j] - pperp_h[i]*df_dppara_h[i][j])*(igamma[i][j]*igamma[i][j]);
-                //igamma[i][j] = 1.0/sqrt(1.0 + pow(pperp_h[i]/(cl*mass), 2));
             }
         }
 
@@ -741,9 +740,9 @@ public://TODO: private later
                     a0 = ai*da + a_min;
                     damax = max(max(fabs(z0 - a0), fabs(z1 - a0)), max(fabs(z2 - a0), fabs(z3 - a0)));
                     damaxs[k][ai] = max(damaxs[k][ai], damax);
-                    a1 = z0 - a0;
-                    b = z1 - z0; //TODO: check
-                    c = z2 - z0; //TODO: check
+                    a1 = a0 - z0;
+                    b = z1 - z0;
+                    c = z2 - z0;
                     d = z3 - z0 - b - c;
                     series.pushDenominator(k, i, j, ai, a1, b, c, d);
                     series.accumulate(series.sX00a, U0, kp0[k], 1.0);
