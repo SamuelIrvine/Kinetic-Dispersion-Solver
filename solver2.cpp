@@ -551,7 +551,7 @@ private:
 };
 
 
-class Species {
+class RelativisticSpecies {
 
 public://TODO: private later
 
@@ -579,7 +579,7 @@ public://TODO: private later
     arr2d kp0, kp1, kp2, kp3, kp4, kp5;
     TaylorSum series;
 
-    Species(const boost::python::object &species, double B) {
+    RelativisticSpecies(const boost::python::object &species, double B) {
         charge = p::extract<double>(species.attr("charge"));
         mass = p::extract<double>(species.attr("mass"));
         density = p::extract<double>(species.attr("density"));
@@ -655,9 +655,13 @@ public://TODO: private later
         }
         sum = 2.0*M_PI*dppara*dpperp*sum/9.0;
 
+        double igammamin = 1.0;
         for (size_t i=0;i < nperp_h ; i++){
             for (size_t j=0;j<npara_h;j++){
                 igamma[i][j] = 1.0/sqrt(1.0 + pow(pperp_h[i]/(cl*mass), 2) + pow(ppara_h[j]/(cl*mass), 2));
+                if (igamma[i][j]<igammamin){
+                    igammamin = igamma[i][j];
+                }
                 vpara_h[i][j] = ppara_h[j] * igamma[i][j] * (1.0/mass);
                 df_dpperp_h[i][j]/=sum;
                 df_dppara_h[i][j]/=sum;
@@ -669,6 +673,8 @@ public://TODO: private later
                 W1[i][j] = wc0*ppara_h[j]*(ppara_h[j]*df_dpperp_h[i][j] - pperp_h[i]*df_dppara_h[i][j])*(igamma[i][j]*igamma[i][j]);
             }
         }
+
+        //cout<<"IGammaMin: "<<igammamin<<endl;
 
         p::list pyns = p::extract<p::list>(species.attr("ns"));
         for (int i = 0; i < len(pyns); ++i) {
@@ -823,45 +829,45 @@ public://TODO: private later
         X[2][0] = -x02*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[2][1] = -I*x12*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[2][2] = X22*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-//        cout<<1.0 + X[0][0]<<", "<<X[0][1]<<", "<<1.0 + X[1][1]<<", "<<1.0 + X[2][2]<<endl;
-//        cout<<X[0][0]<<", "<<X[0][1]<<", "<<X[1][1]<<", "<<X[2][2]<<endl;
+        cout<<1.0 + X[0][0]<<", "<<X[0][1]<<", "<<1.0 + X[1][1]<<", "<<1.0 + X[2][2]<<endl;
+        cout<<X[0][0]<<", "<<X[0][1]<<", "<<X[1][1]<<", "<<X[2][2]<<endl;
         return X;
     }
 };
 
-class Solver {
+class RelativisticSolver {
 
     double kperp, kpara;
 
-    vector<Species> species;
+    vector<RelativisticSpecies> species;
 
 public:
 
-    Solver(const p::list &list, const double B) {
+    RelativisticSolver(const p::list &list, const double B) {
         Py_Initialize();
         np::initialize();
         for (int i = 0; i < len(list); i++) {
-            species.push_back(Species(list[i], B));
+            species.push_back(RelativisticSpecies(list[i], B));
         }
     }
 
     void push_kperp(const double kperp) {
         this->kperp = kperp;
-        for (Species &spec: species) {
+        for (RelativisticSpecies &spec: species) {
             spec.push_kperp(kperp);
         }
     }
 
     void push_kpara(const double kpara) {
         this->kpara = kpara;
-        for (Species &spec: species) {
+        for (RelativisticSpecies &spec: species) {
             spec.push_kpara(kpara);
         }
     }
 
     cdouble evaluate(const double wr, const double wi) {
         array<array<cdouble, 3>, 3> X;
-        for (Species &spec: species) {
+        for (RelativisticSpecies &spec: species) {
             X+=spec.push_omega(kpara, wr, wi);
         }
         X[0][0] += 1.0;
@@ -930,11 +936,11 @@ public:
 
 
 
-BOOST_PYTHON_MODULE (libSolver) {
-    p::class_<Solver>("Solver", p::init<const boost::python::list, double>())
-            .def("push_kperp", &Solver::push_kperp)
-            .def("push_kpara", &Solver::push_kpara)
-            .def("evaluate", &Solver::evaluate)
-            .def("marginalize", &Solver::marginalize);
+BOOST_PYTHON_MODULE (libRelativisticSolver) {
+    p::class_<RelativisticSolver>("RelativisticSolver", p::init<const boost::python::list, double>())
+            .def("push_kperp", &RelativisticSolver::push_kperp)
+            .def("push_kpara", &RelativisticSolver::push_kpara)
+            .def("evaluate", &RelativisticSolver::evaluate)
+            .def("marginalize", &RelativisticSolver::marginalize);
 
 }

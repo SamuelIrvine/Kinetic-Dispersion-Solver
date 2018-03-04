@@ -22,8 +22,11 @@ IF(Boost_FOUND)
     SET(Boost_USE_STATIC_RUNTIME OFF)
     FIND_PACKAGE(Boost 1.62.0 COMPONENTS python numpy)
 
-    ADD_LIBRARY(Solver SHARED solver2)
+    ADD_LIBRARY(Solver SHARED solver)
     TARGET_LINK_LIBRARIES(Solver ${Boost_LIBRARIES})
+
+    ADD_LIBRARY(RelativisticSolver SHARED solver2)
+    TARGET_LINK_LIBRARIES(RelativisticSolver ${Boost_LIBRARIES})
 ELSEIF(NOT Boost_FOUND)
     MESSAGE(FATAL_ERROR "Unable to find correct Boost version. Did you set BOOST_ROOT?")
 ENDIF()
