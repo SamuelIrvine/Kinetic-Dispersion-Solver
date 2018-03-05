@@ -310,13 +310,13 @@ private:
         return array<double, 2>{x, m*x + c};
     };
 
-    void setupHalfTriangles(const cdouble a0, const double a1, const double a2, const bool upper, bool debug = false){
+    void setupHalfTriangles(const cdouble a0, const double b1, const double c1, const bool upper, bool debug = false){
         array<double, 2> Q0, Q1, Q2, Q4, Q5, Q6, Q7;
         cdouble a;
-        double theta = atan2(a2, a1);
+        double theta = atan2(c1, b1);
         double R0 = cos(theta);
         double R1 = sin(theta);
-        a = (R0 * a1 + R1 * a2) / a0;
+        a = (R0 * b1 + R1 * c1) / a0;
         Triangle &tri1 = upper?triD:triB;
         Triangle &tri2 = upper?triC:triA;
         if (upper){
@@ -385,8 +385,8 @@ private:
         tri2.QB = Q5;
         tri2.QC = Q6;
 
-        setupTriangle(tri1, R0, R1, a, a0, debug);
-        setupTriangle(tri2, R0, R1, a, a0, debug);
+        setupTriangle(tri1, R0, R1, a, a0);
+        setupTriangle(tri2, R0, R1, a, a0);
 
     }
 
@@ -394,7 +394,7 @@ private:
         t.p0 = t.p1 = t.p2 = t.p3 = t.p4 = t.p5 = t.p6 = t.p7 = t.p8 = 0.0;
     }
 
-    void setupTriangle(Triangle &t, const double R0, const double R1, const cdouble a1, const cdouble a0, bool debug = false){
+    void setupTriangle(Triangle &t, const double R0, const double R1, const cdouble a1, const cdouble a0){
         double y0 = t.QA[1];
         double x0 = t.QA[0];
         double x1 = t.QB[0] - x0;
@@ -414,10 +414,6 @@ private:
         t.p6*=a0i;
         t.p7*=a0i;
         t.p8*=a0i;
-
-        if (debug){
-            cout<<"mg0: "<<m0<<", mg1: "<<m1<<", x0: "<<x0<<", x1: "<<x1<<endl;
-        }
     }
 
     void computeTriangleIntegral(const double m0, const double m1, const double x0, const double y0,
@@ -428,28 +424,41 @@ private:
         //Integral is of form 1/(1 + a1*x0 + a1*x1)
         //Divide through by (1 + a1*x0)
         //Integral now of form 1/(1 + a2*x1)
+        //Each triangle would need to contain R0, R1, m0, m1
+
         cdouble Inorm = 1.0/(1.0 + a1*x0);
         cdouble a2 = a1*Inorm;
         cdouble O0, O1, O2, O3, O4, O5;
+        double narr[]{1./1., 1./2., 1./3., 1./4., 1./5., 1./5., 1./7., 1./8., 1./9., 1./10., 1./11., 1./12., 1./13., 1./14., 1./15., 1./16.};
         if (fabs(x1*a2.imag())<0.1 && fabs(x1*a2.real())< 0.1){
             cdouble logfacsum{0.0, 0.0};
-            for (size_t i = 19; i > 5; i--) {
-                logfacsum -= pow(-x1*a2, i)/(0.0+i);
+            array<cdouble, 16> powarr;
+            powarr[0] = -x1*a2;
+            for (size_t i=1;i<16;i++){
+                powarr[i] = powarr[i-1]*(-x1*a2);
+            }
+            for (size_t i = 16; i > 5; i--) {
+                logfacsum -= powarr[i-1]*narr[i-1];
             }
             O5 = logfacsum;
-            O4 = O5 - pow(-x1*a2, 5)/5.;
-            O3 = O4 - pow(-x1*a2, 4)/4.;
-            O2 = O3 - pow(-x1*a2, 3)/3.;
-            O1 = O2 - pow(-x1*a2, 2)/2.;
-            O0 = O1 - pow(-x1*a2, 1)/1.;
+            O4 = O5 - powarr[4]*narr[4];
+            O3 = O4 - powarr[3]*narr[3];
+            O2 = O3 - powarr[2]*narr[2];
+            O1 = O2 - powarr[1]*narr[1];
+            O0 = O1 - powarr[0]*narr[0];
 
         }else{
             O0 = 0.5*log1p(x1*x1*(a2.real()*a2.real() + a2.imag()*a2.imag())) + I*atan2(x1*a2.imag(), 1.0+x1*a2.real());
-            O1 = O0 + pow(-x1*a2, 1)/1.;
-            O2 = O1 + pow(-x1*a2, 2)/2.;
-            O3 = O2 + pow(-x1*a2, 3)/3.;
-            O4 = O3 + pow(-x1*a2, 4)/4.;
-            O5 = O4 + pow(-x1*a2, 5)/5.;
+            array<cdouble, 5> powarr;
+            powarr[0] = -x1*a2;
+            for (size_t i=1;i<5;i++){
+                powarr[i] = powarr[i-1]*(-x1*a2);
+            }
+            O1 = O0 + powarr[0]*narr[0];
+            O2 = O1 + powarr[1]*narr[1];
+            O3 = O2 + powarr[2]*narr[2];
+            O4 = O3 + powarr[3]*narr[3];
+            O5 = O4 + powarr[4]*narr[4];
         }
 
         cdouble oa2 = 1.0/a2;
@@ -498,52 +507,67 @@ private:
         cdouble Ix0y1 = Inorm * (0.5*(-m0_2 + m1_2) * O2)*oa2_3;
         cdouble Ix0y0 = Inorm * ((m0 - m1) * O1)*oa2_2;
 
+        //60 variables --> saves on 4 but overall using too much memory
         t.p0 = Ix0y0;
-        t.p1 = R0*Ix1y0 - R1*Ix0y1 + (R0*x0 - R1*y0)*Ix0y0;
-        t.p2 = R0*R0*Ix2y0 - 2*R0*R1*Ix1y1 + Ix1y0*(2.*R0*R0*x0 - 2.*R0*R1*y0)
-                + R1*R1*Ix0y2 + (-2 * R0 * R1 * x0 + 2.*R1*R1 * y0)*Ix0y1
-                + (R0*R0*x0*x0 - 2.*R0*R1*x0*y0 + R1*R1*y0*y0)*Ix0y0;
-        t.p3 = R1*Ix1y0 + R0*Ix0y1 + (R1*x0 + R0*y0)*Ix0y0;
-        t.p4 = R0*R1*Ix2y0 + (R0_2 - R1_2)*Ix1y1 + (2.*R0*R1*x0 + R0_2*y0 - R1_2*y0)*Ix1y0
-                - R0*R1*Ix0y2 + (R0_2*x0 - R1_2*x0 - 2.*R0*R1*y0)*Ix0y1
-                + (R0*R1*x0_2 + R0_2*x0*y0 - R1_2*x0*y0 - R0*R1*y0_2)*Ix0y0;
+        t.p1 = R0*Ix1y0
+               - R1*Ix0y1
+               + (R0*x0 - R1*y0)*Ix0y0;
+        t.p2 = R0*R0*Ix2y0
+               - 2*R0*R1*Ix1y1
+               + (2.*R0*R0*x0 - 2.*R0*R1*y0)*Ix1y0
+               + R1*R1*Ix0y2
+               + (-2 * R0 * R1 * x0 + 2.*R1*R1 * y0)*Ix0y1
+               + (R0*R0*x0*x0 - 2.*R0*R1*x0*y0 + R1*R1*y0*y0)*Ix0y0;
+        t.p3 = R1*Ix1y0
+               + R0*Ix0y1
+               + (R1*x0 + R0*y0)*Ix0y0;
+        t.p4 = R0*R1*Ix2y0
+               + (R0_2 - R1_2)*Ix1y1
+               + (2.*R0*R1*x0 + R0_2*y0 - R1_2*y0)*Ix1y0
+               - R0*R1*Ix0y2
+               + (R0_2*x0 - R1_2*x0 - 2.*R0*R1*y0)*Ix0y1
+               + (R0*R1*x0_2 + R0_2*x0*y0 - R1_2*x0*y0 - R0*R1*y0_2)*Ix0y0;
         t.p5 = R0_2*R1*Ix3y0
-                + (R0_3 - 2*R0*R1_2)*Ix2y1
-                + (3 * R0_2 * R1 * x0 + R0_3 * y0 - 2 * R0 * R1_2 * y0)*Ix2y0
-                + (-2 * R0_2 * R1 + R1_3)*Ix1y2
-                + (2 * R0_3 * x0 - 4 * R0 * R1_2 * x0 - 4 * R0_2 * R1 * y0 + 2 * R1_3 * y0)*Ix1y1
-                + (3 * R0_2 * R1 * x0_2 + 2 * R0_3 * x0 * y0 - 4 * R0 * R1_2 * x0 * y0 - 2 * R0_2 * R1 * y0_2 + R1_3 * y0_2) * Ix1y0
-                + (R0 * R1_2) * Ix0y3
-                + (-2 * R0_2 * R1 * x0 + R1_3 * x0 + 3 * R0 * R1_2 * y0)*Ix0y2
-                + (R0_3 * x0_2 - 2 * R0 * R1_2 * x0_2 - 4 * R0_2 * R1 * x0 * y0 + 2 * R1_3 * x0 * y0 + 3 * R0 * R1_2 * y0_2) * Ix0y1
-                + (R0_2 * R1 * x0_3 + R0_3 * x0_2 * y0 - 2 * R0 * R1_2 * x0_2 * y0 - 2 * R0_2 * R1 * x0 * y0_2 + R1_3 * x0 * y0_2 + R0 * R1_2 * y0_3)*Ix0y0;
-        t.p6 = R1_2 * Ix2y0 + (2 * R0 * R1)*Ix1y1 + (2 * R1_2 * x0 + 2 * R0 * R1 * y0) * Ix1y0
-                + R0_2*Ix0y2 + (2 * R0 * R1 * x0 + 2 * R0_2 * y0)*Ix0y1
-                + (R1_2 * x0_2 + 2 * R0 * R1 * x0 * y0 + R0_2 * y0_2)*Ix0y0;
-        t.p7 = (R0 * R1_2) * Ix3y0 + (2 * R0_2 * R1 - R1_3)*Ix2y1
-                + (3 * R0 * R1_2 * x0 + 2 * R0_2 * R1 * y0 - R1_3 * y0)*Ix2y0
-                + (R0_3 - 2 * R0 * R1_2)*Ix1y2
-                + (4 * R0_2 * R1 * x0 - 2 * R1_3 * x0 + 2 * R0_3 * y0 - 4 * R0 * R1_2 * y0) * Ix1y1
-                + (3 * R0 * R1_2 * x0_2 + 4 * R0_2 * R1 * x0 * y0 - 2 * R1_3 * x0 * y0 + R0_3 * y0_2 - 2 * R0 * R1_2 * y0_2) * Ix1y0
-                + (-R0_2 * R1)*Ix0y3
-                + (R0_3 * x0 - 2 * R0 * R1_2 * x0 - 3 * R0_2 * R1 * y0)*Ix0y2
-                + (2 * R0_2 * R1 * x0_2 - R1_3 * x0_2 + 2 * R0_3 * x0 * y0 - 4 * R0 * R1_2 * x0 * y0 - 3 * R0_2 * R1 * y0_2)*Ix0y1
-                + (R0 * R1_2 * x0_3 + 2 * R0_2 * R1 * x0_2 * y0 - R1_3 * x0_2 * y0 + R0_3 * x0 * y0_2 - 2 * R0 * R1_2 * x0 * y0_2 - R0_2 * R1 * y0_3)*Ix0y0;
+               + (R0_3 - 2*R0*R1_2)*Ix2y1
+               + (3 * R0_2 * R1 * x0 + R0_3 * y0 - 2 * R0 * R1_2 * y0)*Ix2y0
+               + (-2 * R0_2 * R1 + R1_3)*Ix1y2
+               + (2 * R0_3 * x0 - 4 * R0 * R1_2 * x0 - 4 * R0_2 * R1 * y0 + 2 * R1_3 * y0)*Ix1y1
+               + (3 * R0_2 * R1 * x0_2 + 2 * R0_3 * x0 * y0 - 4 * R0 * R1_2 * x0 * y0 - 2 * R0_2 * R1 * y0_2 + R1_3 * y0_2) * Ix1y0
+               + (R0 * R1_2) * Ix0y3
+               + (-2 * R0_2 * R1 * x0 + R1_3 * x0 + 3 * R0 * R1_2 * y0)*Ix0y2
+               + (R0_3 * x0_2 - 2 * R0 * R1_2 * x0_2 - 4 * R0_2 * R1 * x0 * y0 + 2 * R1_3 * x0 * y0 + 3 * R0 * R1_2 * y0_2) * Ix0y1
+               + (R0_2 * R1 * x0_3 + R0_3 * x0_2 * y0 - 2 * R0 * R1_2 * x0_2 * y0 - 2 * R0_2 * R1 * x0 * y0_2 + R1_3 * x0 * y0_2 + R0 * R1_2 * y0_3)*Ix0y0;
+        t.p6 = R1_2 * Ix2y0
+               + (2 * R0 * R1)*Ix1y1
+               + (2 * R1_2 * x0 + 2 * R0 * R1 * y0) * Ix1y0
+               + R0_2*Ix0y2
+               + (2 * R0 * R1 * x0 + 2 * R0_2 * y0)*Ix0y1
+               + (R1_2 * x0_2 + 2 * R0 * R1 * x0 * y0 + R0_2 * y0_2)*Ix0y0;
+        t.p7 = (R0 * R1_2) * Ix3y0
+               + (2 * R0_2 * R1 - R1_3)*Ix2y1
+               + (3 * R0 * R1_2 * x0 + 2 * R0_2 * R1 * y0 - R1_3 * y0)*Ix2y0
+               + (R0_3 - 2 * R0 * R1_2)*Ix1y2
+               + (4 * R0_2 * R1 * x0 - 2 * R1_3 * x0 + 2 * R0_3 * y0 - 4 * R0 * R1_2 * y0) * Ix1y1
+               + (3 * R0 * R1_2 * x0_2 + 4 * R0_2 * R1 * x0 * y0 - 2 * R1_3 * x0 * y0 + R0_3 * y0_2 - 2 * R0 * R1_2 * y0_2) * Ix1y0
+               + (-R0_2 * R1)*Ix0y3
+               + (R0_3 * x0 - 2 * R0 * R1_2 * x0 - 3 * R0_2 * R1 * y0)*Ix0y2
+               + (2 * R0_2 * R1 * x0_2 - R1_3 * x0_2 + 2 * R0_3 * x0 * y0 - 4 * R0 * R1_2 * x0 * y0 - 3 * R0_2 * R1 * y0_2)*Ix0y1
+               + (R0 * R1_2 * x0_3 + 2 * R0_2 * R1 * x0_2 * y0 - R1_3 * x0_2 * y0 + R0_3 * x0 * y0_2 - 2 * R0 * R1_2 * x0 * y0_2 - R0_2 * R1 * y0_3)*Ix0y0;
         t.p8 = (R0_2 * R1_2)*Ix4y0
-                + (2 * R0_3 * R1 - 2 * R0 * R1_3)*Ix3y1
-                + (4 * R0_2 * R1_2 * x0 + 2 * R0_3 * R1 * y0 - 2 * R0 * R1_3 * y0)*Ix3y0
-                + (R0_4 - 4 * R0_2 * R1_2 + R1_4)*Ix2y2
-                + (6 * R0_3 * R1 * x0 - 6 * R0 * R1_3 * x0 + 2 * R0_4 * y0 - 8 * R0_2 * R1_2 * y0 + 2 * R1_4 * y0)*Ix2y1
-                + (6 * R0_2 * R1_2 * x0_2 + 6 * R0_3 * R1 * x0 * y0 - 6 * R0 * R1_3 * x0 * y0 + R0_4 * y0_2 - 4 * R0_2 * R1_2 * y0_2 + R1_4 * y0_2)*Ix2y0
-                + (-2 * R0_3 * R1 + 2 * R0 * R1_3)*Ix1y3
-                + (2 * R0_4 * x0 - 8 * R0_2 * R1_2 * x0 + 2 * R1_4 * x0 - 6 * R0_3 * R1 * y0 + 6 * R0 * R1_3 * y0)*Ix1y2
-                + (6 * R0_3 * R1 * x0_2 - 6 * R0 * R1_3 * x0_2 + 4 * R0_4 * x0 * y0 - 16 * R0_2 * R1_2 * x0 * y0 + 4 * R1_4 * x0 * y0 - 6 * R0_3 * R1 * y0_2 + 6 * R0 * R1_3 * y0_2)*Ix1y1
-                + (4 * R0_2 * R1_2 * x0_3 + 6 * R0_3 * R1 * x0_2 * y0 - 6 * R0 * R1_3 * x0_2 * y0 + 2 * R0_4 * x0 * y0_2 - 8 * R0_2 * R1_2 * x0 * y0_2 + 2 * R1_4 * x0 * y0_2 - 2 * R0_3 * R1 * y0_3 + 2 * R0 * R1_3 * y0_3)*Ix1y0
-                + (R0_2 * R1_2)*Ix0y4
-                + (-2 * R0_3 * R1 * x0 + 2 * R0 * R1_3 * x0 + 4 * R0_2 * R1_2 * y0)*Ix0y3
-                + (R0_4 * x0_2 - 4 * R0_2 * R1_2 * x0_2 + R1_4 * x0_2 - 6 * R0_3 * R1 * x0 * y0 + 6 * R0 * R1_3 * x0 * y0 + 6 * R0_2 * R1_2 * y0_2)*Ix0y2
-                + (2 * R0_3 * R1 * x0_3 - 2 * R0 * R1_3 * x0_3 + 2 * R0_4 * x0_2 * y0 - 8 * R0_2 * R1_2 * x0_2 * y0 + 2 * R1_4 * x0_2 * y0 - 6 * R0_3 * R1 * x0 * y0_2 + 6 * R0 * R1_3 * x0 * y0_2 + 4 * R0_2 * R1_2 * y0_3)*Ix0y1
-                + (R0_2 * R1_2 * x0_4 + 2 * R0_3 * R1 * x0_3 * y0 - 2 * R0 * R1_3 * x0_3 * y0 + R0_4 * x0_2 * y0_2 - 4 * R0_2 * R1_2 * x0_2 * y0_2 + R1_4 * x0_2 * y0_2 - 2 * R0_3 * R1 * x0 * y0_3 + 2 * R0 * R1_3 * x0 * y0_3 + R0_2 * R1_2 * y0_4)*Ix0y0;
+               + (2 * R0_3 * R1 - 2 * R0 * R1_3)*Ix3y1
+               + (4 * R0_2 * R1_2 * x0 + 2 * R0_3 * R1 * y0 - 2 * R0 * R1_3 * y0)*Ix3y0
+               + (R0_4 - 4 * R0_2 * R1_2 + R1_4)*Ix2y2
+               + (6 * R0_3 * R1 * x0 - 6 * R0 * R1_3 * x0 + 2 * R0_4 * y0 - 8 * R0_2 * R1_2 * y0 + 2 * R1_4 * y0)*Ix2y1
+               + (6 * R0_2 * R1_2 * x0_2 + 6 * R0_3 * R1 * x0 * y0 - 6 * R0 * R1_3 * x0 * y0 + R0_4 * y0_2 - 4 * R0_2 * R1_2 * y0_2 + R1_4 * y0_2)*Ix2y0
+               + (-2 * R0_3 * R1 + 2 * R0 * R1_3)*Ix1y3
+               + (2 * R0_4 * x0 - 8 * R0_2 * R1_2 * x0 + 2 * R1_4 * x0 - 6 * R0_3 * R1 * y0 + 6 * R0 * R1_3 * y0)*Ix1y2
+               + (6 * R0_3 * R1 * x0_2 - 6 * R0 * R1_3 * x0_2 + 4 * R0_4 * x0 * y0 - 16 * R0_2 * R1_2 * x0 * y0 + 4 * R1_4 * x0 * y0 - 6 * R0_3 * R1 * y0_2 + 6 * R0 * R1_3 * y0_2)*Ix1y1
+               + (4 * R0_2 * R1_2 * x0_3 + 6 * R0_3 * R1 * x0_2 * y0 - 6 * R0 * R1_3 * x0_2 * y0 + 2 * R0_4 * x0 * y0_2 - 8 * R0_2 * R1_2 * x0 * y0_2 + 2 * R1_4 * x0 * y0_2 - 2 * R0_3 * R1 * y0_3 + 2 * R0 * R1_3 * y0_3)*Ix1y0
+               + (R0_2 * R1_2)*Ix0y4
+               + (-2 * R0_3 * R1 * x0 + 2 * R0 * R1_3 * x0 + 4 * R0_2 * R1_2 * y0)*Ix0y3
+               + (R0_4 * x0_2 - 4 * R0_2 * R1_2 * x0_2 + R1_4 * x0_2 - 6 * R0_3 * R1 * x0 * y0 + 6 * R0 * R1_3 * x0 * y0 + 6 * R0_2 * R1_2 * y0_2)*Ix0y2
+               + (2 * R0_3 * R1 * x0_3 - 2 * R0 * R1_3 * x0_3 + 2 * R0_4 * x0_2 * y0 - 8 * R0_2 * R1_2 * x0_2 * y0 + 2 * R1_4 * x0_2 * y0 - 6 * R0_3 * R1 * x0 * y0_2 + 6 * R0 * R1_3 * x0 * y0_2 + 4 * R0_2 * R1_2 * y0_3)*Ix0y1
+               + (R0_2 * R1_2 * x0_4 + 2 * R0_3 * R1 * x0_3 * y0 - 2 * R0 * R1_3 * x0_3 * y0 + R0_4 * x0_2 * y0_2 - 4 * R0_2 * R1_2 * x0_2 * y0_2 + R1_4 * x0_2 * y0_2 - 2 * R0_3 * R1 * x0 * y0_3 + 2 * R0 * R1_3 * x0 * y0_3 + R0_2 * R1_2 * y0_4)*Ix0y0;
     }
 
 
