@@ -1027,7 +1027,7 @@ public://TODO: private later
         nperp_h = nperp_g*2 + 1;
         npara_h = npara_g*2 + 1;
 
-        n_taylor = 2000;
+        n_taylor = 1000;
 
         ppara_h = arr1d(npara_h, 0.0);
         pperp_h = arr1d(nperp_h, 0.0);
@@ -1197,7 +1197,7 @@ public://TODO: private later
         const cdouble iw = 1.0/w;
         for (size_t k=0;k<ns.size();k++){
             for (size_t ai=0;ai<n_taylor;ai++){
-                if (fabs(a_mins[k] + ai*das[k] + wr)<20*damaxs[k][ai]){
+                if (fabs(a_mins[k] + ai*das[k] + wr)<40*damaxs[k][ai]){
                     const int n = ns[k];
                     //cout<<series.mapping[k].size()<<endl;
                     for (pair<size_t, size_t> p:series.mapping[k][ai]){
