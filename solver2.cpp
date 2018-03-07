@@ -242,6 +242,409 @@ public:
 
 };
 
+class TaylorSum2 {
+
+    struct Element{
+        arr2d sum1, sum2, sum3;
+
+        Element(){};
+
+        Element(size_t n_s, size_t n_a){
+            sum1 = arr2d(n_s, arr1d(n_a, 0.0));
+            sum2 = arr2d(n_s, arr1d(n_a, 0.0));
+            sum3 = arr2d(n_s, arr1d(n_a, 0.0));
+        }
+    };
+
+public:
+    arr2d a0;
+    size_t i, j, ni, ai;
+    cdouble c1, c2, c3;
+
+    Element sX00a, sX01a, sX02a, sX11a, sX12a, sX22a;
+    Element sX00b, sX01b, sX02b, sX11b, sX12b, sX22b;
+
+    vector<vector<vector<pair<size_t, size_t>>>> mapping;
+
+    struct Triangle{
+        double p0[3], p1[3], p2[3], p3[3], p4[3], p5[3], p6[3], p7[3], p8[3];
+        array<double, 2> QA, QB, QC;
+        double R0, R1, y0, x0, x1, m0, m1, mx;
+        bool active;
+    };
+
+    Triangle triA, triB, triC, triD;
+
+    TaylorSum2(){
+    }
+
+    TaylorSum2(size_t n_a, vector<int> &ns) {
+        size_t n_s = ns.size();
+        a0 = arr2d(n_s, arr1d(n_a, 0.0));
+        sX00a = Element(n_s, n_a);
+        sX01a = Element(n_s, n_a);
+        sX02a = Element(n_s, n_a);
+        sX11a = Element(n_s, n_a);
+        sX12a = Element(n_s, n_a);
+        sX22a = Element(n_s, n_a);
+        sX00b = Element(n_s, n_a);
+        sX01b = Element(n_s, n_a);
+        sX02b = Element(n_s, n_a);
+        sX11b = Element(n_s, n_a);
+        sX12b = Element(n_s, n_a);
+        sX22b = Element(n_s, n_a);
+        mapping = vector<vector<vector<pair<size_t, size_t>>>>(n_s);
+        for (size_t k=0;k<ns.size();k++){
+            mapping[k] = vector<vector<pair<size_t, size_t>>>(n_a);
+        }
+    }
+
+    inline void setA(const size_t ni, const double a_min, const double da){
+        for (size_t ai=0;ai<a0[ni].size();ai++){
+            a0[ni][ai] = a_min + ai*da;
+        }
+    }
+
+    inline void pushDenominator(const size_t ni, const size_t i, const size_t j, const size_t ai,
+                                const double z0, const double z1, const double z2, const double z3){
+        this->ni = ni;
+        this->i = i;
+        this->j = j;
+        this->ai = ai;
+
+        setupHalfTriangles(z1-z0, z2-z0, false);
+        setupHalfTriangles(z3-z2, z3-z1, true);
+        double a1 = z0;
+        double a2 = z1 + z2 - z3;
+        double da1 = a1 - a0[ni][ai];
+        double da2 = a2 - a0[ni][ai];
+        computeTriangleIntegral(triA, ni, ai, da1);
+        computeTriangleIntegral(triB, ni, ai, da1);
+        computeTriangleIntegral(triC, ni, ai, da2);
+        computeTriangleIntegral(triD, ni, ai, da2);
+        mapping[ni][ai].push_back(pair<size_t, size_t>(i, j));
+    }
+
+    static array<double, 2> intersect(const array<double, 2> &P1, const array<double, 2> &P2, const double x){
+        double m = (P1[1] - P2[1])/(P1[0] - P2[0]);
+        double c = P1[1] - m*P1[0];
+        return array<double, 2>{x, m*x + c};
+    };
+
+    void setupTriangle(Triangle &t, const double R0, const double R1) {
+        t.R0 = R0;
+        t.R1 = R1;
+        t.y0 = t.QA[1];
+        t.x0 = t.QA[0];
+        t.x1 = t.QB[0] - t.x0;
+        double mAB = (t.QA[1] - t.QB[1]) / (t.QA[0] - t.QB[0]);
+        double mAC = (t.QA[1] - t.QC[1]) / (t.QA[0] - t.QC[0]);
+        t.m0 = (mAB > mAC) ? mAC : mAB;
+        t.m1 = (mAB > mAC) ? mAB : mAC;
+        t.active = true;
+    }
+
+    void zeroTriangle(Triangle &t){
+        t.active = false;
+    }
+
+    void setupHalfTriangles(const double mx, const double my, const bool upper){
+        array<double, 2> Q0, Q1, Q2, Q4, Q5, Q6, Q7;
+        double theta = atan2(my, mx);
+        double R0 = cos(theta);
+        double R1 = sin(theta);
+        //a = (R0 * mx + R1 * my) / a0;
+        double mq = (R0 * mx + R1 * my);
+        Triangle &tri1 = upper?triD:triB;
+        Triangle &tri2 = upper?triC:triA;
+        tri1.mx = mq;
+        tri2.mx = mq;
+        if (upper){
+            //Triangles always clockwise.
+            Q0[0] = 1.0*R0 + 1.0*R1;
+            Q0[1] = 1.0*-R1 + 1.0*R0;
+            Q1[0] = 1.0*R0 + 0.0*R1;
+            Q1[1] = 1.0*-R1 + 0.0*R0;
+            Q2[0] = 0.0*R0 + 1.0*R1;
+            Q2[1] = 0.0*-R1 + 1.0*R0;
+        }else{
+            Q0[0] = 0.0*R0 + 0.0*R1;
+            Q0[1] = 0.0*-R1 + 0.0*R0;
+            Q1[0] = 1.0*R0 + 0.0*R1;
+            Q1[1] = 1.0*-R1 + 0.0*R0;
+            Q2[0] = 0.0*R0 + 1.0*R1;
+            Q2[1] = 0.0*-R1 + 1.0*R0;
+        }
+        if (fabs(Q0[0] - Q1[0])<0.0000001){
+            tri1.QA = Q2;
+            tri1.QB = Q0;
+            tri1.QC = Q1;
+            setupTriangle(tri1, R0, R1);
+            zeroTriangle(tri2);
+            return;
+        }
+        if (fabs(Q0[0] - Q2[0])<0.0000001){
+            tri1.QA = Q1;
+            tri1.QB = Q0;
+            tri1.QC = Q2;
+            setupTriangle(tri1, R0, R1);
+            zeroTriangle(tri2);
+            return;
+        }
+        if (fabs(Q1[0] - Q2[0])<0.0000001){
+            tri1.QA = Q0;
+            tri1.QB = Q1;
+            tri1.QC = Q2;
+            setupTriangle(tri1, R0, R1);
+            zeroTriangle(tri2);
+            return;
+        }
+        if ((Q1[0] < Q0[0] && Q0[0] < Q2[0]) || (Q2[0] < Q0[0] && Q0[0] < Q1[0])){
+            Q4 = Q2;
+            Q5 = Q0;
+            Q6 = intersect(Q1, Q2, Q0[0]);
+            Q7 = Q1;
+        }
+        else if ((Q0[0] < Q1[0] && Q1[0] < Q2[0]) || (Q2[0] < Q1[0] && Q1[0] < Q0[0])) {
+            Q4 = Q2;
+            Q5 = Q1;
+            Q6 = intersect(Q0, Q2, Q1[0]);
+            Q7 = Q0;
+        }
+        else{
+            Q4 = Q0;
+            Q5 = Q2;
+            Q6 = intersect(Q0, Q1, Q2[0]);
+            Q7 = Q1;
+        }
+
+        tri1.QA = Q4;
+        tri1.QB = Q5;
+        tri1.QC = Q6;
+        tri2.QA = Q7;
+        tri2.QB = Q5;
+        tri2.QC = Q6;
+
+        setupTriangle(tri1, R0, R1);
+        setupTriangle(tri2, R0, R1);
+    }
+
+    void computeTriangleIntegral(Triangle& t, const size_t ni, const size_t ai, const double da) {
+
+        if (!t.active){
+            for (size_t l=0;l<3;l++) {
+                t.p0[l] = 0.0;
+                t.p1[l] = 0.0;
+                t.p2[l] = 0.0;
+                t.p3[l] = 0.0;
+                t.p4[l] = 0.0;
+                t.p5[l] = 0.0;
+                t.p6[l] = 0.0;
+                t.p7[l] = 0.0;
+                t.p8[l] = 0.0;
+            }
+            return;
+        }
+
+        double x0 = t.x0;
+        double x1 = t.x1;
+        double y0 = t.y0;
+        double R0 = t.R0;
+        double R1 = t.R1;
+        double m0 = t.m0;
+        double m1 = t.m1;
+        double mx = t.mx;
+        double x0_2 = x0 * x0;
+        double x0_3 = x0 * x0_2;
+        double x0_4 = x0 * x0_3;
+        double x1_2 = x1 * x1;
+        double x1_3 = x1 * x1_2;
+        double x1_4 = x1 * x1_3;
+        double x1_5 = x1 * x1_4;
+        double x1_6 = x1 * x1_5;
+        double x1_7 = x1 * x1_6;
+        double x1_8 = x1 * x1_7;
+        double y0_2 = y0 * y0;
+        double y0_3 = y0 * y0_2;
+        double y0_4 = y0 * y0_3;
+        double m0_2 = m0*m0;
+        double m0_3 = m0_2*m0;
+        double m0_4 = m0_3*m0;
+        double m0_5 = m0_4*m0;
+        double m1_2 = m1*m1;
+        double m1_3 = m1_2*m1;
+        double m1_4 = m1_3*m1;
+        double m1_5 = m1_4*m1;
+        double mx_2 = mx*mx;
+        double da_2 = da * da;
+        double R0_2 = R0*R0;
+        double R0_3 = R0_2*R0;
+        double R0_4 = R0_3*R0;
+        double R1_2 = R1*R1;
+        double R1_3 = R1_2*R1;
+        double R1_4 = R1_3*R1;
+
+
+
+        double O1[3], O2[3], O3[3], O4[3], O5[3];
+
+        O1[0] = -(x1_2*0.5);
+        O1[1] = (3 * da * x1_2 + 3 * mx * x0 * x1_2 - 2 * mx * x1_3)*(1./6.);
+        O1[2] = (-6 * da_2 * x1_2 - 12 * da * mx * x0 * x1_2 - 6 * mx_2 * x0_2 * x1_2 +
+                8 * da * mx * x1_3 + 8 * mx_2 * x0 * x1_3 - 3 * mx_2 * x1_4)*(1./12.);
+
+        O2[0] = -(x1_3*(1./3.));
+        O2[1] = (4 * da * x1_3 + 4 * mx * x0 * x1_3 - 3 * mx * x1_4)*(1./12.);
+        O2[2] = (-10 * da_2 * x1_3 - 20 * da * mx * x0 * x1_3 - 10 * mx_2 * x0_2 * x1_3 +
+                15 * da * mx * x1_4 + 15 * mx_2 * x0 * x1_4 - 6 * mx_2 * x1_5)*(1./30.);
+
+        O3[0] = -(x1_4*(1./4.));
+        O3[1] = (5 * da * x1_4 + 5 * mx * x0 * x1_4 - 4 * mx * x1_5)*(1./20.);
+        O3[2] = (-15 * da_2 * x1_4 - 30 * da * mx * x0 * x1_4 - 15 * mx_2 * x0_2 * x1_4 +
+                24 * da * mx * x1_5 + 24 * mx_2 * x0 * x1_5 - 10 * mx_2 * x1_6)*(1./60.);
+
+        O4[0] = -(x1_5*(1./5.));
+        O4[1] = (6 * da * x1_5 + 6 * mx * x0 * x1_5 - 5 * mx * x1_6)*(1./30.);
+        O4[2] = (-21 * da_2 * x1_5 - 42 * da * mx * x0 * x1_5 - 21 * mx_2 * x0_2 * x1_5 +
+                35 * da * mx * x1_6 + 35 * mx_2 * x0 * x1_6 - 15 * mx_2 * x1_7)*(1./105.);
+
+        O5[0] = -(x1_6*(1./6.));
+        O5[1] = (7 * da * x1_6 + 7 * mx * x0 * x1_6 - 6 * mx * x1_7)*(1./42.);
+        O5[2] = (-28 * da_2 * x1_6 - 56 * da * mx * x0 * x1_6 - 28 * mx_2 * x0_2 * x1_6 +
+                48 * da * mx * x1_7 + 48 * mx_2 * x0 * x1_7 - 21 * mx_2 * x1_8)*(1./168.);
+
+
+        for (size_t l=0;l<3;l++) {
+            double Ix4y0 = (m0 - m1) * O5[l];
+            double Ix3y1 = 0.5 * (m0_2 - m1_2) * O5[l];
+            double Ix2y2 = (1. / 3.) * (m0_3 - m1_3) * O5[l];
+            double Ix1y3 = 0.25 * (m0_4 - m1_4) * O5[l];
+            double Ix0y4 = 0.2 * (m0_5 - m1_5) * O5[l];
+            double Ix3y0 = (-m0 + m1) * O4[l];
+            double Ix2y1 = -0.5 * (m0_2 - m1_2) * O4[l];
+            double Ix1y2 = (1.0 / 3.0) * (-m0_3 + m1_3) * O4[l];
+            double Ix0y3 = 0.25 * (-m0_4 + m1_4) * O4[l];
+            double Ix2y0 = (m0 - m1) * O3[l];
+            double Ix1y1 = 0.5 * (m0_2 - m1_2) * O3[l];
+            double Ix0y2 = (1.0 / 3.0) * (m0_3 - m1_3) * O3[l];
+            double Ix1y0 = (-m0 + m1) * O2[l];
+            double Ix0y1 = 0.5 * (-m0_2 + m1_2) * O2[l];
+            double Ix0y0 = (m0 - m1) * O1[l];
+
+            t.p0[l] = Ix0y0;
+            t.p1[l] = (R0*Ix1y0
+                       - R1*Ix0y1
+                       + (R0*x0 - R1*y0)*Ix0y0);
+            t.p2[l] = (R0_2*Ix2y0
+                       - 2*R0*R1*Ix1y1
+                       + (2.*R0_2*x0 - 2.*R0*R1*y0)*Ix1y0
+                       + R1_2*Ix0y2
+                       + (-2 * R0 * R1 * x0 + 2.*R1_2 * y0)*Ix0y1
+                       + (R0_2*x0_2 - 2.*R0*R1*x0*y0 + R1_2*y0_2)*Ix0y0);
+            t.p3[l] = (R1*Ix1y0
+                       + R0*Ix0y1
+                       + (R1*x0 + R0*y0)*Ix0y0);
+            t.p4[l] = (R0*R1*Ix2y0
+                       + (R0_2 - R1_2)*Ix1y1
+                       + (2.*R0*R1*x0 + R0_2*y0 - R1_2*y0)*Ix1y0
+                       - R0*R1*Ix0y2
+                       + (R0_2*x0 - R1_2*x0 - 2.*R0*R1*y0)*Ix0y1
+                       + (R0*R1*x0_2 + R0_2*x0*y0 - R1_2*x0*y0 - R0*R1*y0_2)*Ix0y0);
+            t.p5[l] = (R0_2*R1*Ix3y0
+                       + (R0_3 - 2*R0*R1_2)*Ix2y1
+                       + (3 * R0_2 * R1 * x0 + R0_3 * y0 - 2 * R0 * R1_2 * y0)*Ix2y0
+                       + (-2 * R0_2 * R1 + R1_3)*Ix1y2
+                       + (2 * R0_3 * x0 - 4 * R0 * R1_2 * x0 - 4 * R0_2 * R1 * y0 + 2 * R1_3 * y0)*Ix1y1
+                       + (3 * R0_2 * R1 * x0_2 + 2 * R0_3 * x0 * y0 - 4 * R0 * R1_2 * x0 * y0 - 2 * R0_2 * R1 * y0_2 + R1_3 * y0_2) * Ix1y0
+                       + (R0 * R1_2) * Ix0y3
+                       + (-2 * R0_2 * R1 * x0 + R1_3 * x0 + 3 * R0 * R1_2 * y0)*Ix0y2
+                       + (R0_3 * x0_2 - 2 * R0 * R1_2 * x0_2 - 4 * R0_2 * R1 * x0 * y0 + 2 * R1_3 * x0 * y0 + 3 * R0 * R1_2 * y0_2) * Ix0y1
+                       + (R0_2 * R1 * x0_3 + R0_3 * x0_2 * y0 - 2 * R0 * R1_2 * x0_2 * y0 - 2 * R0_2 * R1 * x0 * y0_2 + R1_3 * x0 * y0_2 + R0 * R1_2 * y0_3)*Ix0y0);
+            t.p6[l] = (R1_2 * Ix2y0
+                       + (2 * R0 * R1)*Ix1y1
+                       + (2 * R1_2 * x0 + 2 * R0 * R1 * y0) * Ix1y0
+                       + R0_2*Ix0y2
+                       + (2 * R0 * R1 * x0 + 2 * R0_2 * y0)*Ix0y1
+                       + (R1_2 * x0_2 + 2 * R0 * R1 * x0 * y0 + R0_2 * y0_2)*Ix0y0);
+            t.p7[l] = ((R0 * R1_2) * Ix3y0
+                       + (2 * R0_2 * R1 - R1_3)*Ix2y1
+                       + (3 * R0 * R1_2 * x0 + 2 * R0_2 * R1 * y0 - R1_3 * y0)*Ix2y0
+                       + (R0_3 - 2 * R0 * R1_2)*Ix1y2
+                       + (4 * R0_2 * R1 * x0 - 2 * R1_3 * x0 + 2 * R0_3 * y0 - 4 * R0 * R1_2 * y0) * Ix1y1
+                       + (3 * R0 * R1_2 * x0_2 + 4 * R0_2 * R1 * x0 * y0 - 2 * R1_3 * x0 * y0 + R0_3 * y0_2 - 2 * R0 * R1_2 * y0_2) * Ix1y0
+                       + (-R0_2 * R1)*Ix0y3
+                       + (R0_3 * x0 - 2 * R0 * R1_2 * x0 - 3 * R0_2 * R1 * y0)*Ix0y2
+                       + (2 * R0_2 * R1 * x0_2 - R1_3 * x0_2 + 2 * R0_3 * x0 * y0 - 4 * R0 * R1_2 * x0 * y0 - 3 * R0_2 * R1 * y0_2)*Ix0y1
+                       + (R0 * R1_2 * x0_3 + 2 * R0_2 * R1 * x0_2 * y0 - R1_3 * x0_2 * y0 + R0_3 * x0 * y0_2 - 2 * R0 * R1_2 * x0 * y0_2 - R0_2 * R1 * y0_3)*Ix0y0);
+            t.p8[l] = ((R0_2 * R1_2)*Ix4y0
+                       + (2 * R0_3 * R1 - 2 * R0 * R1_3)*Ix3y1
+                       + (4 * R0_2 * R1_2 * x0 + 2 * R0_3 * R1 * y0 - 2 * R0 * R1_3 * y0)*Ix3y0
+                       + (R0_4 - 4 * R0_2 * R1_2 + R1_4)*Ix2y2
+                       + (6 * R0_3 * R1 * x0 - 6 * R0 * R1_3 * x0 + 2 * R0_4 * y0 - 8 * R0_2 * R1_2 * y0 + 2 * R1_4 * y0)*Ix2y1
+                       + (6 * R0_2 * R1_2 * x0_2 + 6 * R0_3 * R1 * x0 * y0 - 6 * R0 * R1_3 * x0 * y0 + R0_4 * y0_2 - 4 * R0_2 * R1_2 * y0_2 + R1_4 * y0_2)*Ix2y0
+                       + (-2 * R0_3 * R1 + 2 * R0 * R1_3)*Ix1y3
+                       + (2 * R0_4 * x0 - 8 * R0_2 * R1_2 * x0 + 2 * R1_4 * x0 - 6 * R0_3 * R1 * y0 + 6 * R0 * R1_3 * y0)*Ix1y2
+                       + (6 * R0_3 * R1 * x0_2 - 6 * R0 * R1_3 * x0_2 + 4 * R0_4 * x0 * y0 - 16 * R0_2 * R1_2 * x0 * y0 + 4 * R1_4 * x0 * y0 - 6 * R0_3 * R1 * y0_2 + 6 * R0 * R1_3 * y0_2)*Ix1y1
+                       + (4 * R0_2 * R1_2 * x0_3 + 6 * R0_3 * R1 * x0_2 * y0 - 6 * R0 * R1_3 * x0_2 * y0 + 2 * R0_4 * x0 * y0_2 - 8 * R0_2 * R1_2 * x0 * y0_2 + 2 * R1_4 * x0 * y0_2 - 2 * R0_3 * R1 * y0_3 + 2 * R0 * R1_3 * y0_3)*Ix1y0
+                       + (R0_2 * R1_2)*Ix0y4
+                       + (-2 * R0_3 * R1 * x0 + 2 * R0 * R1_3 * x0 + 4 * R0_2 * R1_2 * y0)*Ix0y3
+                       + (R0_4 * x0_2 - 4 * R0_2 * R1_2 * x0_2 + R1_4 * x0_2 - 6 * R0_3 * R1 * x0 * y0 + 6 * R0 * R1_3 * x0 * y0 + 6 * R0_2 * R1_2 * y0_2)*Ix0y2
+                       + (2 * R0_3 * R1 * x0_3 - 2 * R0 * R1_3 * x0_3 + 2 * R0_4 * x0_2 * y0 - 8 * R0_2 * R1_2 * x0_2 * y0 + 2 * R1_4 * x0_2 * y0 - 6 * R0_3 * R1 * x0 * y0_2 + 6 * R0 * R1_3 * x0 * y0_2 + 4 * R0_2 * R1_2 * y0_3)*Ix0y1
+                       + (R0_2 * R1_2 * x0_4 + 2 * R0_3 * R1 * x0_3 * y0 - 2 * R0 * R1_3 * x0_3 * y0 + R0_4 * x0_2 * y0_2 - 4 * R0_2 * R1_2 * x0_2 * y0_2 + R1_4 * x0_2 * y0_2 - 2 * R0_3 * R1 * x0 * y0_3 + 2 * R0 * R1_3 * x0 * y0_3 + R0_2 * R1_2 * y0_4)*Ix0y0);
+        }
+    }
+
+
+    void accumulate(Element &X, const arr2d &p, const arr1d &q, const double r){
+        double z0 = p[i*2][j*2]*q[i*2]*r;
+        double z1 = p[i*2][j*2+1]*q[i*2]*r;
+        double z2 = p[i*2][j*2+2]*q[i*2]*r;
+        double z3 = p[i*2+1][j*2]*q[i*2+1]*r;
+        double z4 = p[i*2+1][j*2+1]*q[i*2+1]*r;
+        double z5 = p[i*2+1][j*2+2]*q[i*2+1]*r;
+        double z6 = p[i*2+2][j*2]*q[i*2+2]*r;
+        double z7 = p[i*2+2][j*2+1]*q[i*2+2]*r;
+        double z8 = p[i*2+2][j*2+2]*q[i*2+2]*r;
+
+        //TODO add in correct taylor expansion for given triangle mapping
+        double c0 = z0;
+        double c1 = -3*z0 + 4*z1 - z2;
+        double c2 = 2*(z0 - 2*z1 + z2);
+        double c3 = -3*z0 + 4*z3 - z6;
+        double c4 = 9*z0 - 12*z1 + 3*z2 - 12*z3 + 16*z4 - 4*z5 + 3*z6 -4*z7 + z8;
+        double c5 = -2*(3*z0 - 6*z1 + 3*z2 - 4*z3 + 8*z4 - 4*z5 + z6 - 2*z7 + z8);
+        double c6 = 2*(z0 - 2*z3 + z6);
+        double c7 = -2*(3*z0 - 4*z1 +z2 - 6*z3 + 8*z4 -2*z5 +3*z6 -4*z7 + z8);
+        double c8 = 4*(z0 -2*z1 + z2 - 2*z3 + 4*z4 -2*z5 + z6 - 2*z7 + z8);
+
+        for (size_t l=0;l<3;l++){
+            double &sum = l==0?X.sum1[ni][ai]:(l==1?X.sum2[ni][ai]:X.sum3[ni][ai]);
+            sum+=c0*(triA.p0[l] + triB.p0[l] + triC.p0[l] + triD.p0[l]);
+            sum+=c1*(triA.p1[l] + triB.p1[l] + triC.p1[l] + triD.p1[l]);
+            sum+=c2*(triA.p2[l] + triB.p2[l] + triC.p2[l] + triD.p2[l]);
+            sum+=c3*(triA.p3[l] + triB.p3[l] + triC.p3[l] + triD.p3[l]);
+            sum+=c4*(triA.p4[l] + triB.p4[l] + triC.p4[l] + triD.p4[l]);
+            sum+=c5*(triA.p5[l] + triB.p5[l] + triC.p5[l] + triD.p5[l]);
+            sum+=c6*(triA.p6[l] + triB.p6[l] + triC.p6[l] + triD.p6[l]);
+            sum+=c7*(triA.p7[l] + triB.p7[l] + triC.p7[l] + triD.p7[l]);
+            sum+=c8*(triA.p8[l] + triB.p8[l] + triC.p8[l] + triD.p8[l]);
+        }
+    }
+
+    inline void pushW(cdouble w, const size_t ni, const size_t ai){
+        this->ni = ni;
+        this->ai = ai;
+        c1 = 1.0/(w + a0[ni][ai]);
+        c2 = c1*c1;
+        c3 = c2*c1;
+    }
+
+    inline cdouble evaluate(Element &X){
+        return c1*X.sum1[ni][ai] + c2*X.sum2[ni][ai] + c3*X.sum3[ni][ai];
+    }
+
+};
+
 class TriangleIntegrator{
 
 public:
@@ -431,8 +834,9 @@ private:
         cdouble O0, O1, O2, O3, O4, O5;
         double narr[]{1./1., 1./2., 1./3., 1./4., 1./5., 1./5., 1./7., 1./8., 1./9., 1./10., 1./11., 1./12., 1./13., 1./14., 1./15., 1./16.};
         if (fabs(x1*a2.imag())<0.1 && fabs(x1*a2.real())< 0.1){
+            //Logs are expanded for numerical precision purposes
             cdouble logfacsum{0.0, 0.0};
-            array<cdouble, 16> powarr;
+            cdouble powarr[16];
             powarr[0] = -x1*a2;
             for (size_t i=1;i<16;i++){
                 powarr[i] = powarr[i-1]*(-x1*a2);
@@ -446,10 +850,9 @@ private:
             O2 = O3 - powarr[2]*narr[2];
             O1 = O2 - powarr[1]*narr[1];
             O0 = O1 - powarr[0]*narr[0];
-
         }else{
             O0 = 0.5*log1p(x1*x1*(a2.real()*a2.real() + a2.imag()*a2.imag())) + I*atan2(x1*a2.imag(), 1.0+x1*a2.real());
-            array<cdouble, 5> powarr;
+            cdouble powarr[5];
             powarr[0] = -x1*a2;
             for (size_t i=1;i<5;i++){
                 powarr[i] = powarr[i-1]*(-x1*a2);
@@ -489,8 +892,6 @@ private:
         double R1_3 = R1_2*R1;
         double R1_4 = R1_3*R1;
 
-
-
         cdouble Ix4y0 = Inorm*((m0 - m1) * O5)*oa2_6;
         cdouble Ix3y1 = Inorm*(0.5*(m0_2 - m1_2) * O5)*oa2_6;
         cdouble Ix3y0 = Inorm*((-m0 + m1) * O4)*oa2_5;
@@ -507,17 +908,19 @@ private:
         cdouble Ix0y1 = Inorm * (0.5*(-m0_2 + m1_2) * O2)*oa2_3;
         cdouble Ix0y0 = Inorm * ((m0 - m1) * O1)*oa2_2;
 
-        //60 variables --> saves on 4 but overall using too much memory
+        //Work out taylor expansions for Ix0y0, ... for omega
+
+        //60 variables --> precomputation possible but using too much memory
         t.p0 = Ix0y0;
         t.p1 = R0*Ix1y0
                - R1*Ix0y1
                + (R0*x0 - R1*y0)*Ix0y0;
         t.p2 = R0*R0*Ix2y0
                - 2*R0*R1*Ix1y1
-               + (2.*R0*R0*x0 - 2.*R0*R1*y0)*Ix1y0
-               + R1*R1*Ix0y2
+               + (2.*R0_2*x0 - 2.*R0*R1*y0)*Ix1y0
+               + R1_2*Ix0y2
                + (-2 * R0 * R1 * x0 + 2.*R1*R1 * y0)*Ix0y1
-               + (R0*R0*x0*x0 - 2.*R0*R1*x0*y0 + R1*R1*y0*y0)*Ix0y0;
+               + (R0_2*x0*x0 - 2.*R0*R1*x0*y0 + R1_2*y0*y0)*Ix0y0;
         t.p3 = R1*Ix1y0
                + R0*Ix0y1
                + (R1*x0 + R0*y0)*Ix0y0;
@@ -601,7 +1004,7 @@ public://TODO: private later
     arr1d das, a_mins;
     arr2d damaxs;
     arr2d kp0, kp1, kp2, kp3, kp4, kp5;
-    TaylorSum series;
+    TaylorSum2 series;
 
     RelativisticSpecies(const boost::python::object &species, double B) {
         charge = p::extract<double>(species.attr("charge"));
@@ -679,13 +1082,9 @@ public://TODO: private later
         }
         sum = 2.0*M_PI*dppara*dpperp*sum/9.0;
 
-        double igammamin = 1.0;
         for (size_t i=0;i < nperp_h ; i++){
             for (size_t j=0;j<npara_h;j++){
                 igamma[i][j] = 1.0/sqrt(1.0 + pow(pperp_h[i]/(cl*mass), 2) + pow(ppara_h[j]/(cl*mass), 2));
-                if (igamma[i][j]<igammamin){
-                    igammamin = igamma[i][j];
-                }
                 vpara_h[i][j] = ppara_h[j] * igamma[i][j] * (1.0/mass);
                 df_dpperp_h[i][j]/=sum;
                 df_dppara_h[i][j]/=sum;
@@ -697,8 +1096,6 @@ public://TODO: private later
                 W1[i][j] = wc0*ppara_h[j]*(ppara_h[j]*df_dpperp_h[i][j] - pperp_h[i]*df_dppara_h[i][j])*(igamma[i][j]*igamma[i][j]);
             }
         }
-
-        //cout<<"IGammaMin: "<<igammamin<<endl;
 
         p::list pyns = p::extract<p::list>(species.attr("ns"));
         for (int i = 0; i < len(pyns); ++i) {
@@ -735,7 +1132,7 @@ public://TODO: private later
     }
 
     void push_kpara(const double kpara){
-        series = TaylorSum(n_taylor+1, ns);
+        series = TaylorSum2(n_taylor+1, ns);
         das = arr1d(ns.size(), 0.0);
         a_mins = arr1d(ns.size(), 0.0);
         damaxs = arr2d(ns.size(), arr1d(n_taylor+1, 0.0));
@@ -770,11 +1167,12 @@ public://TODO: private later
                     a0 = ai*da + a_min;
                     damax = max(max(fabs(z0 - a0), fabs(z1 - a0)), max(fabs(z2 - a0), fabs(z3 - a0)));
                     damaxs[k][ai] = max(damaxs[k][ai], damax);
-                    a1 = a0 - z0;
-                    b = z1 - z0;
-                    c = z2 - z0;
-                    d = z3 - z0 - b - c;
-                    series.pushDenominator(k, i, j, ai, a1, b, c, d);
+                    //a1 = a0 - z0;
+                    //b = z1 - z0;
+                    //c = z2 - z0;
+                    //d = z3 - z0 - b - c;
+                    //series.pushDenominator(k, i, j, ai, a1, b, c, d);
+                    series.pushDenominator(k, i, j, ai, z0, z1, z2, z3);
                     series.accumulate(series.sX00a, U0, kp0[k], 1.0);
                     series.accumulate(series.sX00b, U2, kp0[k], kpara);
                     series.accumulate(series.sX01a, U0, kp1[k], 1.0);
@@ -901,12 +1299,6 @@ public:
         cdouble nx = cl*kperp/w;
         cdouble nz = cl*kpara/w;
 
-        //X[0][0] -= nz*nz;
-        //X[0][2] += nx*nz;
-        //X[1][1] -= (nx*nx + nz*nz);
-        //X[2][0] += nx*nz;
-        //X[2][2] -= nx*nx;
-
         cdouble detM = 0.0;
         detM += nz*nz*nx*nx*X[2][2];
         detM += nz*nz*nz*nz*X[2][2];
@@ -924,7 +1316,6 @@ public:
         detM +=-X[0][1]*X[1][0]*X[2][2];
         detM +=-X[1][1]*X[2][0]*X[0][2];
         detM +=-X[2][1]*X[0][0]*X[1][2];
-
 
         return detM*pow(wr, 4) / pow((kpara * kpara + kperp * kperp) * cl * cl, 2);
     }
