@@ -617,7 +617,7 @@ public:
         double c7 = -2*(3*z0 - 4*z1 +z2 - 6*z3 + 8*z4 -2*z5 +3*z6 -4*z7 + z8);
         double c8 = 4*(z0 -2*z1 + z2 - 2*z3 + 4*z4 -2*z5 + z6 - 2*z7 + z8);
 
-        for (size_t l=0;l<2;l++){
+        for (size_t l=0;l<3;l++){
             double &sum = l==0?X.sum1[ni][ai]:(l==1?X.sum2[ni][ai]:X.sum3[ni][ai]);
             sum+=c0*(triA.p0[l] + triB.p0[l] + triC.p0[l] + triD.p0[l]);
             sum+=c1*(triA.p1[l] + triB.p1[l] + triC.p1[l] + triD.p1[l]);
@@ -1027,7 +1027,7 @@ public://TODO: private later
         nperp_h = nperp_g*2 + 1;
         npara_h = npara_g*2 + 1;
 
-        n_taylor = 1000;
+        n_taylor = 2000;
 
         ppara_h = arr1d(npara_h, 0.0);
         pperp_h = arr1d(nperp_h, 0.0);
