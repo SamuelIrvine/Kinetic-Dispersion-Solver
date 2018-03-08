@@ -100,8 +100,7 @@ static T polyEval(const array<array<T, N>, M> &p, const double &x, const double 
 };
 
 
-
-class TaylorSum {
+class TaylorSum2 {
 
     struct Element{
         arr2d sum1, sum2, sum3, sum4, sum5;
@@ -120,7 +119,6 @@ class TaylorSum {
 public:
     arr2d a0;
     size_t i, j, ni, ai;
-    double a1, b, c, d;
     cdouble c1, c2, c3, c4, c5;
 
     Element sX00a, sX01a, sX02a, sX11a, sX12a, sX22a;
@@ -128,146 +126,8 @@ public:
 
     vector<vector<vector<pair<size_t, size_t>>>> mapping;
 
-    TaylorSum(){
-    }
-
-    TaylorSum(size_t n_a, vector<int> &ns) {
-        size_t n_s = ns.size();
-        a0 = arr2d(n_s, arr1d(n_a, 0.0));
-        sX00a = Element(n_s, n_a);
-        sX01a = Element(n_s, n_a);
-        sX02a = Element(n_s, n_a);
-        sX11a = Element(n_s, n_a);
-        sX12a = Element(n_s, n_a);
-        sX22a = Element(n_s, n_a);
-        sX00b = Element(n_s, n_a);
-        sX01b = Element(n_s, n_a);
-        sX02b = Element(n_s, n_a);
-        sX11b = Element(n_s, n_a);
-        sX12b = Element(n_s, n_a);
-        sX22b = Element(n_s, n_a);
-        mapping = vector<vector<vector<pair<size_t, size_t>>>>(n_s);
-        for (size_t k=0;k<ns.size();k++){
-            mapping[k] = vector<vector<pair<size_t, size_t>>>(n_a);
-        }
-    }
-
-    inline void setA(const size_t ni, const double a_min, const double da){
-        for (size_t ai=0;ai<a0[ni].size();ai++){
-            a0[ni][ai] = a_min + ai*da;
-        }
-    }
-
-    inline void pushDenominator(const size_t ni, const size_t i, const size_t j, const size_t ai,
-                                const double a1, const double b, const double c, const double d){
-        this->ni = ni;
-        this->i = i;
-        this->j = j;
-        this->ai = ai;
-        this->a1 = a1;
-        this->b = b;
-        this->c = c;
-        this->d = d;
-        mapping[ni][ai].push_back(pair<size_t, size_t>(i, j));
-    }
-
-    inline void accumulate(Element &X, const arr2d &p, const arr1d &q, const double r){
-        double z0 = p[i*2][j*2]*q[i*2]*r;
-        double z1 = p[i*2][j*2+1]*q[i*2]*r;
-        double z2 = p[i*2][j*2+2]*q[i*2]*r;
-        double z3 = p[i*2+1][j*2]*q[i*2+1]*r;
-        double z4 = p[i*2+1][j*2+1]*q[i*2+1]*r;
-        double z5 = p[i*2+1][j*2+2]*q[i*2+1]*r;
-        double z6 = p[i*2+2][j*2]*q[i*2+2]*r;
-        double z7 = p[i*2+2][j*2+1]*q[i*2+2]*r;
-        double z8 = p[i*2+2][j*2+2]*q[i*2+2]*r;
-
-        double Z0 = (z0 + 4 * z1 + z2 + 4 * z3 + 16 * z4 + 4 * z5 + z6 + 4 * z7 + z8);
-        double Z1 = (2 * z1 + z2 + 8 * z4 + 4 * z5 + 2 * z7 + z8);
-        double Z2 = (2 * z3 + 8 * z4 + 2 * z5 + z6 + 4 * z7 + z8);
-        double Z3 = (4 * z4 + 2 * z5 + 2 * z7 + z8);
-        double Z4 = (z0 + 4 * z1 + z2 - 12 * z3 - 48 * z4 - 12 * z5 - 9 * z6 - 36 * z7 - 9 * z8);
-        double Z5 = (z0 - 12 * z1 - 9 * z2 + 4 * z3 - 48 * z4 - 36 * z5 + z6 - 12 * z7 - 9 * z8);
-        double Z6 = (2 * z1 + z2 - 24 * z4 + 12 * z5 + 18 * z7 + 9 * z8);
-        double Z7 = (2 * z3 - 24 * z4 - 18 * z5 + z6 - 12 * z7 - 9 * z8);
-        double Z8 = (z0 - 3 *(4 *z1 + 3 * z2 + 4 * z3 - 48 * z4 - 36 * z5 + 3 * z6 - 36 * z7 - 27 * z8));
-        double Z9 = (2 * z3 - 16 * z4 - 16 * z5 + z6 - 8 * z7 - 8 * z8);
-        double Z10 = (z0 - 8 * z1 - 8 * z2 + 4 * z3 - 32 * z4 - 32 * z5 + z6 - 8 * z7 - 8 * z8);
-        double Z11 = (z0 - 8 * z1 - 8 * z2 - 12 * z3 + 96 * z4 + 96 * z5 - 9 * z6 + 72 * z7 + 72 * z8);
-        double Z12 = (z0 + 4 * z1 + z2 - 8 * z3 - 32 * z4 - 8 * z5 - 8 * z6 - 32 * z7 - 8 * z8);
-        double Z13 = (2 * z1 + z2 - 8 * (2 * z4 + z5 + 2 * z7 + z8));
-        double Z14 = (z0 - 12 * z1 - 9 * z2 - 8 * z3 + 96 * z4 + 72 * z5 - 8 * z6 + 96 * z7 + 72 * z8);
-        double Z15 = (3 * z0 - 20 * z1 - 25 * z2 + 12 * z3 - 80 * z4 - 100 * z5 + 3 * z6 - 20 * z7 - 25 * z8);
-        double Z16 = (6 * z3 - 40 * z4 - 50 * z5 + 3 * z6 - 20 * z7 - 25 * z8);
-        double Z17 = (3 * z0 - 20 * z1 - 25 * z2 - 36 * z3 + 240 * z4 + 300 * z5 - 27 * z6 + 180 * z7 + 225 * z8);
-        double Z18 = (z0 - 8 * (z1 + z2 + z3 - 8 * z4 - 8 * z5 + z6 - 8 * z7 - 8 * z8));
-        double Z19 = (3 * z0 + 12 * z1 + 3 * z2 - 20 * z3 - 80 * z4 - 20 * z5 - 25 * z6 - 100 * z7 - 25 * z8);
-        double Z20 = (6 * z1 + 3 * z2 - 5 * (8 * z4 + 4 * z5 + 10 * z7 + 5 * z8));
-        double Z21 = (3 * z0 - 36 * z1 - 27 * z2 - 20 * z3 + 240 * z4 + 180 * z5 - 25 * z6 + 300 * z7 + 225 * z8);
-
-        X.sum1[ni][ai]+=Z0*(1.0/36.0);
-        X.sum2[ni][ai]+=-(1.0/36.0) * 0.0*(a1 * Z0 + b * Z1 + c * Z2 + d * Z3);
-        X.sum3[ni][ai]+=(1.0/3600.0) * (100 * a1*a1 * Z0 + 200 * a1 * (b * Z1 + c * Z2 + d * Z3) -
-                                        10 * (c*c * Z4 + b * (b * Z5 - 20 * c * Z3 + 2 * d * Z7) + 2 * c * d * Z6) + d * d * Z8);
-        X.sum4[ni][ai]+=(1.0/3600.0) * (-100 * a1*a1*a1 * Z0 + c * (10 * c * (c * Z12 + 3 * d * Z13) - 3 * d * d * Z14) -
-                                        300 * a1*a1 * (b * Z1 + c * Z2 + d * Z3) +
-                                        30 * a1 * (c * c * Z4 + b * (b * Z5 - 20 * c * Z3 + 2 * d * Z7) + 2 * c * d * Z6) -
-                                        3 * a1 * d*d * Z8 - 3 * b * (d*d * Z11 - 10 * c * c * Z6 + 2 * c * d * Z8) + 10 * b * b * b * Z10 +
-                                        30 * b * b * (c * Z7 + d * Z9));
-        X.sum5[ni][ai]+=(1.0/12600.0) * (350 * a1*a1*a1*a1 * Z0 - 10 * b*b*b*b * Z15 +
-                                         14 * b * c * (-10 * c*c * Z13 + 3 * c * d * Z14 + 3 * d*d * Z18) +
-                                         2 * c*c * (-5 * c * (c * Z19 + 4 * d * Z20) + 3 * d*d * Z21) +
-                                         1400 * a1*a1*a1 * (b * Z1 + c * Z2 + d * Z3) +
-                                         3 * b*b * (2 * d * (7 * c * Z11 + d * Z17) + 7 * c*c * Z8) +
-                                         21 * a1*a1 * (-10 * (c*c * Z4 + b * (b * Z5 - 20 * c * Z3 + 2 * d * Z7) + 2 * c * d * Z6) +
-                                                       d*d * Z8) - 20 * b*b*b * (2 * d * Z16 + 7 * c * Z9) -
-                                         14 * a1 * (c * (10 * c * (c * Z12 + 3 * d * Z13) - 3 * d*d * Z14) -
-                                                    3 * b * (d*d * Z11 - 10 * c*c * Z6 + 2 * c * d * Z8) + 10 * b*b*b * Z10 +
-                                                    30 * b*b * (c * Z7 + d * Z9)));
-    }
-
-    void pushW(cdouble w, const size_t ni, const size_t ai){
-        this->ni = ni;
-        this->ai = ai;
-        c1 = 1.0/(w + a0[ni][ai]);
-        c2 = c1*c1;
-        c3 = c2*c1;
-        c4 = c2*c2;
-        c5 = c4*c1;
-    }
-
-    cdouble evaluate(Element &X){
-        return c1*X.sum1[ni][ai] + c2*X.sum2[ni][ai] + c3*X.sum3[ni][ai] + c4*X.sum4[ni][ai] + c5*X.sum5[ni][ai];
-    }
-
-};
-
-class TaylorSum2 {
-
-    struct Element{
-        arr2d sum1, sum2, sum3;
-
-        Element(){};
-
-        Element(size_t n_s, size_t n_a){
-            sum1 = arr2d(n_s, arr1d(n_a, 0.0));
-            sum2 = arr2d(n_s, arr1d(n_a, 0.0));
-            sum3 = arr2d(n_s, arr1d(n_a, 0.0));
-        }
-    };
-
-public:
-    arr2d a0;
-    size_t i, j, ni, ai;
-    cdouble c1, c2, c3;
-
-    Element sX00a, sX01a, sX02a, sX11a, sX12a, sX22a;
-    Element sX00b, sX01b, sX02b, sX11b, sX12b, sX22b;
-
-    vector<vector<vector<pair<size_t, size_t>>>> mapping;
-
     struct Triangle{
-        double p0[3], p1[3], p2[3], p3[3], p4[3], p5[3], p6[3], p7[3], p8[3];
+        double p0[5], p1[5], p2[5], p3[5], p4[5], p5[5], p6[5], p7[5], p8[5];
         array<double, 2> QA, QB, QC;
         double R0, R1, y0, x0, x1, m0, m1, mx;
         bool active;
@@ -432,7 +292,7 @@ public:
     void computeTriangleIntegral(Triangle& t, const size_t ni, const size_t ai, const double da) {
 
         if (!t.active){
-            for (size_t l=0;l<3;l++) {
+            for (size_t l=0;l<5;l++) {
                 t.p0[l] = 0.0;
                 t.p1[l] = 0.0;
                 t.p2[l] = 0.0;
@@ -464,6 +324,8 @@ public:
         double x1_6 = x1 * x1_5;
         double x1_7 = x1 * x1_6;
         double x1_8 = x1 * x1_7;
+        double x1_9 = x1 * x1_8;
+        double x1_10 = x1 * x1_9;
         double y0_2 = y0 * y0;
         double y0_3 = y0 * y0_2;
         double y0_4 = y0 * y0_3;
@@ -476,7 +338,11 @@ public:
         double m1_4 = m1_3*m1;
         double m1_5 = m1_4*m1;
         double mx_2 = mx*mx;
+        double mx_3 = mx*mx_2;
+        double mx_4 = mx*mx_3;
         double da_2 = da * da;
+        double da_3 = da*da_2;
+        double da_4 = da*da_3;
         double R0_2 = R0*R0;
         double R0_3 = R0_2*R0;
         double R0_4 = R0_3*R0;
@@ -486,35 +352,84 @@ public:
 
 
 
-        double O1[3], O2[3], O3[3], O4[3], O5[3];
+        double O1[5], O2[5], O3[5], O4[5], O5[5];
 
         O1[0] = -(x1_2*0.5);
         O1[1] = (3 * da * x1_2 + 3 * mx * x0 * x1_2 - 2 * mx * x1_3)*(1./6.);
         O1[2] = (-6 * da_2 * x1_2 - 12 * da * mx * x0 * x1_2 - 6 * mx_2 * x0_2 * x1_2 +
                 8 * da * mx * x1_3 + 8 * mx_2 * x0 * x1_3 - 3 * mx_2 * x1_4)*(1./12.);
+        O1[3] = (1./20.) * (10 * da_3 * x1_2 + 30 * da_2 * mx * x0 * x1_2 +
+                30 * da * mx_2 * x0_2 * x1_2 + 10 * mx_3 * x0_3 * x1_2 -
+                20 * da_2 * mx * x1_3 - 40 * da * mx_2 * x0 * x1_3 -
+                20 * mx_3 * x0_2 * x1_3 + 15 * da * mx_2 * x1_4 + 15 * mx_3 * x0 * x1_4 -
+                4 * mx_3 * x1_5);
+        O1[4] = -(1./30.) * x1_2 * (15 * da_4 + 20 * da_3 * mx * (3 * x0 - 2 * x1) +
+                15 * da_2 * mx_2 * (6 * x0_2 - 8 * x0 * x1 + 3 * x1_2) +
+                6 * da * mx_3 * (10 * x0_3 - 20 * x0_2 * x1 + 15 * x0 * x1_2 - 4 * x1_3) +
+                mx_4 * (15 * x0_4 - 40 * x0_3 * x1 + 45 * x0_2 * x1_2 - 24 * x0 * x1_3 + 5 * x1_4));
 
         O2[0] = -(x1_3*(1./3.));
         O2[1] = (4 * da * x1_3 + 4 * mx * x0 * x1_3 - 3 * mx * x1_4)*(1./12.);
         O2[2] = (-10 * da_2 * x1_3 - 20 * da * mx * x0 * x1_3 - 10 * mx_2 * x0_2 * x1_3 +
                 15 * da * mx * x1_4 + 15 * mx_2 * x0 * x1_4 - 6 * mx_2 * x1_5)*(1./30.);
+        O2[3] = (1./60.) * (20 * da_3 * x1_3 + 60 * da_2 * mx * x0 * x1_3 +
+                60 * da * mx_2 * x0_2 * x1_3 + 20 * mx_3 * x0_3 * x1_3 -
+                45 * da_2 * mx * x1_4 - 90 * da * mx_2 * x0 * x1_4 -
+                45 * mx_3 * x0_2 * x1_4 + 36 * da * mx_2 * x1_5 + 36 * mx_3 * x0 * x1_5 -
+                10 * mx_3 * x1_6);
+        O2[4] = (1./105.) * (-35 * da_4 * x1_3 - 140 * da_3 * mx * x0 * x1_3 -
+                210 * da_2 * mx_2 * x0_2 * x1_3 - 140 * da * mx_3 * x0_3 * x1_3 -
+                35 * mx_4 * x0_4 * x1_3 + 105 * da_3 * mx * x1_4 + 315 * da_2 * mx_2 * x0 * x1_4 +
+                315 * da * mx_3 * x0_2 * x1_4 + 105 * mx_4 * x0_3 * x1_4 -
+                126 * da_2 * mx_2 * x1_5 - 252 * da * mx_3 * x0 * x1_5 - 126 * mx_4 * x0_2 * x1_5 +
+                70 * da * mx_3 * x1_6 + 70 * mx_4 * x0 * x1_6 - 15 * mx_4 * x1_7);
 
         O3[0] = -(x1_4*(1./4.));
         O3[1] = (5 * da * x1_4 + 5 * mx * x0 * x1_4 - 4 * mx * x1_5)*(1./20.);
         O3[2] = (-15 * da_2 * x1_4 - 30 * da * mx * x0 * x1_4 - 15 * mx_2 * x0_2 * x1_4 +
                 24 * da * mx * x1_5 + 24 * mx_2 * x0 * x1_5 - 10 * mx_2 * x1_6)*(1./60.);
+        O3[3] = (1./140.) * (35 * da_3 * x1_4 + 105 * da_2 * mx * x0 * x1_4 +
+                105 * da * mx_2 * x0_2 * x1_4 + 35 * mx_3 * x0_3 * x1_4 - 84 * da_2 * mx * x1_5 -
+                168 * da * mx_2 * x0 * x1_5 - 84 * mx_3 * x0_2 * x1_5 + 70 * da * mx_2 * x1_6 +
+                70 * mx_3 * x0 * x1_6 - 20 * mx_3 * x1_7);
+        O3[4] = (1./280.) * (-70 * da_4 * x1_4 - 280 * da_3 * mx * x0 * x1_4 -
+                420 * da_2 * mx_2 * x0_2 * x1_4 - 280 * da * mx_3 * x0_3 * x1_4 -
+                70 * mx_4 * x0_4 * x1_4 + 224 * da_3 * mx * x1_5 + 672 * da_2 * mx_2 * x0 * x1_5 +
+                672 * da * mx_3 * x0_2 * x1_5 + 224 * mx_4 * x0_3 * x1_5 - 280 * da_2 * mx_2 * x1_6 -
+                560 * da * mx_3 * x0 * x1_6 - 280 * mx_4 * x0_2 * x1_6 + 160 * da * mx_3 * x1_7 +
+                160 * mx_4 * x0 * x1_7 - 35 * mx_4 * x1_8);
 
         O4[0] = -(x1_5*(1./5.));
         O4[1] = (6 * da * x1_5 + 6 * mx * x0 * x1_5 - 5 * mx * x1_6)*(1./30.);
         O4[2] = (-21 * da_2 * x1_5 - 42 * da * mx * x0 * x1_5 - 21 * mx_2 * x0_2 * x1_5 +
                 35 * da * mx * x1_6 + 35 * mx_2 * x0 * x1_6 - 15 * mx_2 * x1_7)*(1./105.);
+        O4[3] = (1./280.) * (56 * da_3 * x1_5 + 168 * da_2 * mx * x0 * x1_5 + 168 * da * mx_2 * x0_2 * x1_5 +
+                56 * mx_3 * x0_3 * x1_5 - 140 * da_2 * mx * x1_6 - 280 * da * mx_2 * x0 * x1_6 -
+                140 * mx_3 * x0_2 * x1_6 + 120 * da * mx_2 * x1_7 + 120 * mx_3 * x0 * x1_7 -
+                35 * mx_3 * x1_8);
+        O4[4] = (1./630.) * (-126 * da_4 * x1_5 - 504 * da_3 * mx * x0 * x1_5 - 756 * da_2 * mx_2 * x0_2 * x1_5 -
+                504 * da * mx_3 * x0_3 * x1_5 - 126 * mx_4 * x0_4 * x1_5 + 420 * da_3 * mx * x1_6 +
+                1260 * da_2 * mx_2 * x0 * x1_6 + 1260 * da * mx_3 * x0_2 * x1_6 + 420 * mx_4 * x0_3 * x1_6 -
+                540 * da_2 * mx_2 * x1_7 - 1080 * da * mx_3 * x0 * x1_7 - 540 * mx_4 * x0_2 * x1_7 +
+                315 * da * mx_3 * x1_8 + 315 * mx_4 * x0 * x1_8 - 70 * mx_4 * x1_9);
 
         O5[0] = -(x1_6*(1./6.));
         O5[1] = (7 * da * x1_6 + 7 * mx * x0 * x1_6 - 6 * mx * x1_7)*(1./42.);
         O5[2] = (-28 * da_2 * x1_6 - 56 * da * mx * x0 * x1_6 - 28 * mx_2 * x0_2 * x1_6 +
                 48 * da * mx * x1_7 + 48 * mx_2 * x0 * x1_7 - 21 * mx_2 * x1_8)*(1./168.);
+        O5[3] = (1./504.) * (84 * da_3 * x1_6 + 252 * da_2 * mx * x0 * x1_6 + 252 * da * mx_2 * x0_2 * x1_6 +
+                84 * mx_3 * x0_3 * x1_6 - 216 * da_2 * mx * x1_7 - 432 * da * mx_2 * x0 * x1_7 -
+                216 * mx_3 * x0_2 * x1_7 + 189 * da * mx_2 * x1_8 + 189 * mx_3 * x0 * x1_8 -
+                56 * mx_3 * x1_9);
+        O5[4] = (1./1260.) * (-210 * da_4 * x1_6 - 840 * da_3 * mx * x0 * x1_6 -
+                1260 * da_2 * mx_2 * x0_2 * x1_6 - 840 * da * mx_3 * x0_3 * x1_6 -
+                210 * mx_4 * x0_4 * x1_6 + 720 * da_3 * mx * x1_7 + 2160 * da_2 * mx_2 * x0 * x1_7 +
+                2160 * da * mx_3 * x0_2 * x1_7 + 720 * mx_4 * x0_3 * x1_7 - 945 * da_2 * mx_2 * x1_8 -
+                1890 * da * mx_3 * x0 * x1_8 - 945 * mx_4 * x0_2 * x1_8 + 560 * da * mx_3 * x1_9 +
+                560 * mx_4 * x0 * x1_9 - 126 * mx_4 * x1_10);
 
 
-        for (size_t l=0;l<3;l++) {
+        for (size_t l=0;l<5;l++) {
             double Ix4y0 = (m0 - m1) * O5[l];
             double Ix3y1 = 0.5 * (m0_2 - m1_2) * O5[l];
             double Ix2y2 = (1. / 3.) * (m0_3 - m1_3) * O5[l];
@@ -606,7 +521,6 @@ public:
         double z7 = p[i*2+2][j*2+1]*q[i*2+2]*r;
         double z8 = p[i*2+2][j*2+2]*q[i*2+2]*r;
 
-        //TODO add in correct taylor expansion for given triangle mapping
         double c0 = z0;
         double c1 = -3*z0 + 4*z1 - z2;
         double c2 = 2*(z0 - 2*z1 + z2);
@@ -617,8 +531,28 @@ public:
         double c7 = -2*(3*z0 - 4*z1 +z2 - 6*z3 + 8*z4 -2*z5 +3*z6 -4*z7 + z8);
         double c8 = 4*(z0 -2*z1 + z2 - 2*z3 + 4*z4 -2*z5 + z6 - 2*z7 + z8);
 
-        for (size_t l=0;l<3;l++){
-            double &sum = l==0?X.sum1[ni][ai]:(l==1?X.sum2[ni][ai]:X.sum3[ni][ai]);
+        for (size_t l=0;l<3;l++){//TODO: Fix this sloppy code
+            double *psum;
+            switch(l){
+                case 0:
+                    psum = &X.sum1[ni][ai];
+                    break;
+                case 1:
+                    psum = &X.sum2[ni][ai];
+                    break;
+                case 2:
+                    psum = &X.sum3[ni][ai];
+                    break;
+                case 3:
+                    psum = &X.sum4[ni][ai];
+                    break;
+                case 4:
+                    psum = &X.sum5[ni][ai];
+                    break;
+                default:
+                    psum = nullptr;
+            }
+            double &sum = *psum;
             sum+=c0*(triA.p0[l] + triB.p0[l] + triC.p0[l] + triD.p0[l]);
             sum+=c1*(triA.p1[l] + triB.p1[l] + triC.p1[l] + triD.p1[l]);
             sum+=c2*(triA.p2[l] + triB.p2[l] + triC.p2[l] + triD.p2[l]);
@@ -637,10 +571,12 @@ public:
         c1 = 1.0/(w + a0[ni][ai]);
         c2 = c1*c1;
         c3 = c2*c1;
+        c4 = c3*c1;
+        c5 = c3*c1;
     }
 
     inline cdouble evaluate(Element &X){
-        return c1*X.sum1[ni][ai] + c2*X.sum2[ni][ai] + c3*X.sum3[ni][ai];
+        return c1*X.sum1[ni][ai] + c2*X.sum2[ni][ai] + c3*X.sum3[ni][ai] + c4*X.sum4[ni][ai] + c5*X.sum5[ni][ai];
     }
 
 };
@@ -1156,7 +1092,7 @@ public://TODO: private later
             series.setA(k, a_min, da);
             for (size_t i = 0; i < nperp_g; i++) {
                 for (size_t j = 0; j < npara_g; j++) {
-                    double a, a0, a1, b, c, d, z0, z1, z2, z3, damax;
+                    double a, a0, z0, z1, z2, z3, damax;
                     size_t ai;
                     z0 = -kpara*vpara_h[i*2][j*2] - n*wc0*igamma[i*2][j*2];
                     z1 = -kpara*vpara_h[i*2][j*2+2] - n*wc0*igamma[i*2][j*2+2];
