@@ -801,11 +801,17 @@ private:
         }
 
         cdouble oa2 = 1.0/a2;
-        cdouble oa2_2 = oa2*oa2;
+        cdouble oa2_2 = Inorm*oa2*oa2;
         cdouble oa2_3 = oa2_2*oa2;
         cdouble oa2_4 = oa2_3*oa2;
         cdouble oa2_5 = oa2_4*oa2;
         cdouble oa2_6 = oa2_5*oa2;
+
+        O5 *= oa2_6;
+        O4 *= oa2_5;
+        O3 *= oa2_4;
+        O2 *= oa2_3;
+        O1 *= oa2_2;
 
         double x0_2 = x0 * x0;
         double x0_3 = x0 * x0_2;
@@ -828,21 +834,21 @@ private:
         double R1_3 = R1_2*R1;
         double R1_4 = R1_3*R1;
 
-        cdouble Ix4y0 = Inorm*((m0 - m1) * O5)*oa2_6;
-        cdouble Ix3y1 = Inorm*(0.5*(m0_2 - m1_2) * O5)*oa2_6;
-        cdouble Ix3y0 = Inorm*((-m0 + m1) * O4)*oa2_5;
-        cdouble Ix2y2 = Inorm * ((m0_3 - m1_3) * O5)*(1./3.)*oa2_6;
-        cdouble Ix2y1 = Inorm * (-0.5*(m0_2 - m1_2) * O4)*oa2_5;
-        cdouble Ix2y0 = Inorm*((m0 - m1) * O3)*oa2_4;
-        cdouble Ix1y3 = Inorm*(0.25*(m0_4 - m1_4) * O5)*oa2_6;
-        cdouble Ix1y2 = Inorm*((1.0/3.0) * (-m0_3 + m1_3) * O4)*oa2_5;
-        cdouble Ix1y1 = Inorm*(0.5*(m0_2 - m1_2) * O3)*oa2_4;
-        cdouble Ix1y0 = Inorm*((-m0 + m1) * O2)*oa2_3;
-        cdouble Ix0y4 = Inorm*(0.2*(m0_5 - m1_5) * O5)*oa2_6;
-        cdouble Ix0y3 = Inorm * (0.25*(-m0_4 + m1_4) * O4)*oa2_5;
-        cdouble Ix0y2 = Inorm * ((1.0/3.0)*(m0_3 - m1_3) * O3)*oa2_4;
-        cdouble Ix0y1 = Inorm * (0.5*(-m0_2 + m1_2) * O2)*oa2_3;
-        cdouble Ix0y0 = Inorm * ((m0 - m1) * O1)*oa2_2;
+        cdouble Ix4y0 = ((m0 - m1) * O5);
+        cdouble Ix3y1 = (0.5*(m0_2 - m1_2) * O5);
+        cdouble Ix3y0 = ((-m0 + m1) * O4);
+        cdouble Ix2y2 = ((m0_3 - m1_3) * O5)*(1./3.);
+        cdouble Ix2y1 = (-0.5*(m0_2 - m1_2) * O4);
+        cdouble Ix2y0 = ((m0 - m1) * O3);
+        cdouble Ix1y3 = (0.25*(m0_4 - m1_4) * O5);
+        cdouble Ix1y2 = ((1.0/3.0) * (-m0_3 + m1_3) * O4);
+        cdouble Ix1y1 = (0.5*(m0_2 - m1_2) * O3);
+        cdouble Ix1y0 = ((-m0 + m1) * O2);
+        cdouble Ix0y4 = (0.2*(m0_5 - m1_5) * O5);
+        cdouble Ix0y3 = (0.25*(-m0_4 + m1_4) * O4);
+        cdouble Ix0y2 = ((1.0/3.0)*(m0_3 - m1_3) * O3);
+        cdouble Ix0y1 = (0.5*(-m0_2 + m1_2) * O2);
+        cdouble Ix0y0 = ((m0 - m1) * O1);
 
         //Work out taylor expansions for Ix0y0, ... for omega
 
