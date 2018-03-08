@@ -572,7 +572,7 @@ public:
         c2 = c1*c1;
         c3 = c2*c1;
         c4 = c3*c1;
-        c5 = c3*c1;
+        c5 = c4*c1;
     }
 
     inline cdouble evaluate(Element &X){
