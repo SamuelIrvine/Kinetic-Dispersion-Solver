@@ -531,7 +531,7 @@ public:
         double c7 = -2*(3*z0 - 4*z1 +z2 - 6*z3 + 8*z4 -2*z5 +3*z6 -4*z7 + z8);
         double c8 = 4*(z0 -2*z1 + z2 - 2*z3 + 4*z4 -2*z5 + z6 - 2*z7 + z8);
 
-        for (size_t l=0;l<3;l++){//TODO: Fix this sloppy code
+        for (size_t l=0;l<5;l++){//TODO: Fix this sloppy code
             double *psum;
             switch(l){
                 case 0:
