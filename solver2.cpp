@@ -1139,7 +1139,7 @@ public://TODO: private later
         const cdouble iw = 1.0/w;
         for (size_t k=0;k<ns.size();k++){
             for (size_t ai=0;ai<n_taylor;ai++){
-                if (fabs(a_mins[k] + ai*das[k] + wr)<10*damaxs[k][ai]){
+                if (fabs(a_mins[k] + ai*das[k] + wr)<100*damaxs[k][ai]){
                     const int n = ns[k];
                     //cout<<series.mapping[k].size()<<endl;
                     for (pair<size_t, size_t> p:series.mapping[k][ai]){
