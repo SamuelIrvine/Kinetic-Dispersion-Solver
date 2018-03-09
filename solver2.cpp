@@ -769,7 +769,7 @@ private:
         cdouble a2 = a1*Inorm;
         cdouble O0, O1, O2, O3, O4, O5;
         double narr[]{1./1., 1./2., 1./3., 1./4., 1./5., 1./5., 1./7., 1./8., 1./9., 1./10., 1./11., 1./12., 1./13., 1./14., 1./15., 1./16.};
-        if (fabs(x1*a2.imag())<0.1 && fabs(x1*a2.real())< 0.1){
+        if (fabs(x1*a2.imag())<0.01 && fabs(x1*a2.real())< 0.01){
             //Logs are expanded for numerical precision purposes
             cdouble logfacsum{0.0, 0.0};
             cdouble powarr[16];
@@ -1139,7 +1139,7 @@ public://TODO: private later
         const cdouble iw = 1.0/w;
         for (size_t k=0;k<ns.size();k++){
             for (size_t ai=0;ai<n_taylor;ai++){
-                if (fabs(a_mins[k] + ai*das[k] + wr)<1000*damaxs[k][ai]){
+                if (fabs(a_mins[k] + ai*das[k] + wr)<10*damaxs[k][ai]){
                     const int n = ns[k];
                     //cout<<series.mapping[k].size()<<endl;
                     for (pair<size_t, size_t> p:series.mapping[k][ai]){
