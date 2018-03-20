@@ -769,15 +769,15 @@ private:
         cdouble a2 = a1*Inorm;
         cdouble O0, O1, O2, O3, O4, O5;
         double narr[]{1./1., 1./2., 1./3., 1./4., 1./5., 1./5., 1./7., 1./8., 1./9., 1./10., 1./11., 1./12., 1./13., 1./14., 1./15., 1./16.};
-        if ((x1*x1*(a2.real()*a2.real() + a2.imag()*a2.imag())) < 0.4){
+        if ((x1*x1*(a2.real()*a2.real() + a2.imag()*a2.imag())) < 0.1){
             //Logs are expanded for numerical precision purposes
             cdouble logfacsum{0.0, 0.0};
-            cdouble powarr[16];
+            cdouble powarr[20];
             powarr[0] = -x1*a2;
-            for (size_t i=1;i<16;i++){
+            for (size_t i=1;i<20;i++){
                 powarr[i] = powarr[i-1]*(-x1*a2);
             }
-            for (size_t i = 16; i > 5; i--) {
+            for (size_t i = 20; i > 5; i--) {
                 logfacsum -= powarr[i-1]*narr[i-1];
             }
             O5 = logfacsum;
