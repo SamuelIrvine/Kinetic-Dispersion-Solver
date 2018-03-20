@@ -772,12 +772,12 @@ private:
         if ((x1*x1*(a2.real()*a2.real() + a2.imag()*a2.imag())) < 0.1){
             //Logs are expanded for numerical precision purposes
             cdouble logfacsum{0.0, 0.0};
-            cdouble powarr[20];
+            cdouble powarr[16];
             powarr[0] = -x1*a2;
-            for (size_t i=1;i<20;i++){
+            for (size_t i=1;i<16;i++){
                 powarr[i] = powarr[i-1]*(-x1*a2);
             }
-            for (size_t i = 20; i > 5; i--) {
+            for (size_t i = 16; i > 5; i--) {
                 logfacsum -= powarr[i-1]*narr[i-1];
             }
             O5 = logfacsum;
@@ -787,7 +787,9 @@ private:
             O1 = O2 - powarr[1]*narr[1];
             O0 = O1 - powarr[0]*narr[0];
         }else{
-            O0 = 0.5*log1p(x1*x1*(a2.real()*a2.real() + a2.imag()*a2.imag())) + I*atan2(x1*a2.imag(), 1.0+x1*a2.real());
+            //(1 + ax) * (1 + ax) + b*b*x*x
+            //1 + 2*a*x + a*a*x*x
+            O0 = 0.5*log1p(x1*(2.*a2.real() + x1*(a2.real()*a2.real() + a2.imag()*a2.imag()))) + I*atan2(x1*a2.imag(), 1.0+x1*a2.real());
             cdouble powarr[5];
             powarr[0] = -x1*a2;
             for (size_t i=1;i<5;i++){
