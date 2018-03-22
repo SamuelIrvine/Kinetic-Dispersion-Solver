@@ -1191,9 +1191,9 @@ public://TODO: private later
         X[0][2] = X02*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[1][0] = -I*X01*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[1][1] = X11*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[1][2] = I*X12*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[1][2] = -I*X12*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[2][0] = X02*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;//This was -??
-        X[2][1] = -I*X12*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[2][1] = I*X12*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[2][2] = X22*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         cout<<1.0 + X[0][0]<<", "<<X[0][1]<<", "<<1.0 + X[1][1]<<", "<<1.0 + X[2][2]<<endl;
         cout<<X[0][0]<<", "<<X[0][1]<<", "<<X[1][1]<<", "<<X[2][2]<<endl;
