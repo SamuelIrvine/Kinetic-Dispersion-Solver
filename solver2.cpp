@@ -1029,7 +1029,6 @@ public://TODO: private later
         for (size_t i=0;i < nperp_h ; i++){
             for (size_t j=0;j<npara_h;j++){
                 igamma[i][j] = 1.0/sqrt(1.0 + pow(pperp_h[i]/(cl*mass), 2) + pow(ppara_h[j]/(cl*mass), 2));
-                igamma[i][j] = 1.0;
                 vpara_h[i][j] = ppara_h[j] * igamma[i][j] * (1.0/mass);
                 df_dpperp_h[i][j]/=sum;
                 df_dppara_h[i][j]/=sum;
@@ -1137,7 +1136,7 @@ public://TODO: private later
 
     array<array<cdouble, 3>, 3> push_omega(const double kpara, const double wr, const double wi) {
         array<array<cdouble, 3>, 3> X;
-        cdouble X00{0.0, 0.0}, X01{0.0, 0.0}, x02{0.0, 0.0}, X11{0.0, 0.0}, x12{0.0, 0.0}, X22{0.0, 0.0};
+        cdouble X00{0.0, 0.0}, X01{0.0, 0.0}, X02{0.0, 0.0}, X11{0.0, 0.0}, X12{0.0, 0.0}, X22{0.0, 0.0};
         const cdouble w = wr + I*wi;
         const cdouble iw = 1.0/w;
         for (size_t k=0;k<ns.size();k++){
@@ -1160,12 +1159,12 @@ public://TODO: private later
                         X00 += integrator.evaluate(i, j, U2, kp0[k], kpara)*iw;
                         X01 += integrator.evaluate(i, j, U0, kp1[k], 1.0);
                         X01 += integrator.evaluate(i, j, U2, kp1[k], kpara)*iw;
-                        x02 += integrator.evaluate(i, j, U1, kp2[k], 1.0);
-                        x02 += integrator.evaluate(i, j, U3, kp2[k], kpara)*iw;
+                        X02 += integrator.evaluate(i, j, U1, kp2[k], 1.0);
+                        X02 += integrator.evaluate(i, j, U3, kp2[k], kpara)*iw;
                         X11 += integrator.evaluate(i, j, U0, kp3[k], 1.0);
                         X11 += integrator.evaluate(i, j, U2, kp3[k], kpara)*iw;
-                        x12 += integrator.evaluate(i, j, U1, kp4[k], 1.0);
-                        x12 += integrator.evaluate(i, j, U3, kp4[k], kpara)*iw;
+                        X12 += integrator.evaluate(i, j, U1, kp4[k], 1.0);
+                        X12 += integrator.evaluate(i, j, U3, kp4[k], kpara)*iw;
                         X22 += integrator.evaluate(i, j, W0, kp5[k], 1.0);
                         X22 += integrator.evaluate(i, j, W1, kp5[k], n)*iw;
                     }
@@ -1177,24 +1176,24 @@ public://TODO: private later
                 X00+=series.evaluate(series.sX00b)*iw;
                 X01+=series.evaluate(series.sX01a);
                 X01+=series.evaluate(series.sX01b)*iw;
-                x02+=series.evaluate(series.sX02a);
-                x02+=series.evaluate(series.sX02b)*iw;
+                X02+=series.evaluate(series.sX02a);
+                X02+=series.evaluate(series.sX02b)*iw;
                 X11+=series.evaluate(series.sX11a);
                 X11+=series.evaluate(series.sX11b)*iw;
-                x12+=series.evaluate(series.sX12a);
-                x12+=series.evaluate(series.sX12b)*iw;
+                X12+=series.evaluate(series.sX12a);
+                X12+=series.evaluate(series.sX12b)*iw;
                 X22+=series.evaluate(series.sX22a);
                 X22+=series.evaluate(series.sX22b)*iw;
             }
         }
         X[0][0] = X00*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[0][1] = I*X01*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[0][2] = x02*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[0][2] = X02*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[1][0] = -I*X01*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[1][1] = X11*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[1][2] = I*x12*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[2][0] = -x02*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[2][1] = -I*x12*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[1][2] = I*X12*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[2][0] = -X02*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[2][1] = -I*X12*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[2][2] = X22*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         cout<<1.0 + X[0][0]<<", "<<X[0][1]<<", "<<1.0 + X[1][1]<<", "<<1.0 + X[2][2]<<endl;
         cout<<X[0][0]<<", "<<X[0][1]<<", "<<X[1][1]<<", "<<X[2][2]<<endl;
