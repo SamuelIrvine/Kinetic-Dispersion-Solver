@@ -1034,8 +1034,8 @@ public://TODO: private later
                 df_dppara_h[i][j]/=sum;
                 U0[i][j] = df_dpperp_h[i][j] * igamma[i][j];
                 U1[i][j] = ppara_h[j]*df_dpperp_h[i][j] * igamma[i][j];
-                U2[i][j] = 0.0*(pperp_h[i]*df_dppara_h[i][j] - ppara_h[j]*df_dpperp_h[i][j])*igamma[i][j]*igamma[i][j]*(1.0/mass);
-                U3[i][j] = 0.0*ppara_h[j]*(pperp_h[i]*df_dppara_h[i][j] - ppara_h[j]*df_dpperp_h[i][j])*igamma[i][j]*igamma[i][j]*(1.0/mass);
+                U2[i][j] = (pperp_h[i]*df_dppara_h[i][j] - ppara_h[j]*df_dpperp_h[i][j])*igamma[i][j]*igamma[i][j]*(1.0/mass);
+                U3[i][j] = ppara_h[j]*(pperp_h[i]*df_dppara_h[i][j] - ppara_h[j]*df_dpperp_h[i][j])*igamma[i][j]*igamma[i][j]*(1.0/mass);
                 W0[i][j] = ppara_h[j]*pperp_h[i]*df_dppara_h[i][j]*igamma[i][j];
                 W1[i][j] = wc0*ppara_h[j]*(ppara_h[j]*df_dpperp_h[i][j] - pperp_h[i]*df_dppara_h[i][j])*(igamma[i][j]*igamma[i][j]);
             }
@@ -1188,11 +1188,11 @@ public://TODO: private later
         }
         X[0][0] = X00*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[0][1] = -I*X01*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[0][2] = 0.0*X02*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[0][2] = X02*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[1][0] = I*X01*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[1][1] = X11*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[1][2] = I*X12*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[2][0] = 0.0*X02*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[2][0] = X02*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[2][1] = -I*X12*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[2][2] = X22*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         //cout<<1.0 + X[0][0]<<", "<<X[0][1]<<", "<<1.0 + X[1][1]<<", "<<1.0 + X[2][2]<<endl;
@@ -1244,22 +1244,33 @@ public:
         cdouble nz = cl*kpara/w;
 
         cdouble detM = 0.0;
-        detM += nz*nz*nx*nx*X[2][2];
-        detM += nz*nz*nz*nz*X[2][2];
-        detM += X[0][0]*nz*nz*nx*nx;
-        detM += X[0][0]*nx*nx*nx*nx;
-        detM +=-nz*nz*X[1][1]*X[2][2];
-        detM +=-X[0][0]*nx*nx*X[2][2];
-        detM +=-X[0][0]*nz*nz*X[2][2];
-        detM += -nx*nx*X[0][0]*X[1][1];
-        detM += X[0][1]*X[1][0]*nx*nx;
-        detM += nx*nz*X[0][1]*X[1][2];
-        detM += X[2][1]*nz*nz*X[1][2];
 
-        detM += X[0][0]*X[1][1]*X[2][2];
-        detM +=-X[0][1]*X[1][0]*X[2][2];
-        detM +=-X[1][1]*X[2][0]*X[0][2];
-        detM +=-X[2][1]*X[0][0]*X[1][2];
+        X[0][0] -= nz*nz;
+        X[1][1] -= nx*nx + nz*nz;
+        X[2][2] -= nx*nx;
+        X[0][2] += nx*nz;
+        X[2][0] += nx*nz;
+
+        detM += X[0][0]*(X[1][1]*X[2][2] - X[1][2]*X[2][1]);
+        detM += X[1][0]*(X[2][1]*X[0][2] - X[2][2]*X[0][1]);
+        detM += X[2][0]*(X[0][1]*X[1][2] - X[0][2]*X[1][1]);
+
+//        detM += nz*nz*nx*nx*X[2][2];
+//        detM += nz*nz*nz*nz*X[2][2];
+//        detM += X[0][0]*nz*nz*nx*nx;
+//        detM += X[0][0]*nx*nx*nx*nx;
+//        detM +=-nz*nz*X[1][1]*X[2][2];
+//        detM +=-X[0][0]*nx*nx*X[2][2];
+//        detM +=-X[0][0]*nz*nz*X[2][2];
+//        detM += -nx*nx*X[0][0]*X[1][1];
+//        detM += X[0][1]*X[1][0]*nx*nx;
+//        detM += nx*nz*X[0][1]*X[1][2];
+//        detM += X[2][1]*nz*nz*X[1][2];
+//
+//        detM += X[0][0]*X[1][1]*X[2][2];
+//        detM +=-X[0][1]*X[1][0]*X[2][2];
+//        detM +=-X[1][1]*X[2][0]*X[0][2];
+//        detM +=-X[2][1]*X[0][0]*X[1][2];
 
         return detM*pow(wr, 4) / pow((kpara * kpara + kperp * kperp) * cl * cl, 2);
     }
