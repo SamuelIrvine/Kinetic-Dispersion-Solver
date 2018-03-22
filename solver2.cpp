@@ -1069,7 +1069,7 @@ public://TODO: private later
                 kp1[k][i] = n*jns[k][i]*jnds[k][i]*pperp_h[i]*(wc0*mass/(kperp));
                 kp2[k][i] = n*jns[k][i]*jns[k][i]*(wc0*mass/(kperp));
                 kp3[k][i] = jnds[k][i]*jnds[k][i]*pperp_h[i]*pperp_h[i];
-                kp4[k][i] = jns[k][i]*jnds[k][i];
+                kp4[k][i] = jns[k][i]*jnds[k][i]*pperp_h[i];
                 kp5[k][i] = jns[k][i]*jns[k][i];
             }
         }
@@ -1187,13 +1187,13 @@ public://TODO: private later
             }
         }
         X[0][0] = X00*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[0][1] = I*X01*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[0][1] = -I*X01*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[0][2] = X02*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[1][0] = -I*X01*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[1][0] = I*X01*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[1][1] = X11*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[1][2] = -I*X12*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[1][2] = I*X12*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[2][0] = X02*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
-        X[2][1] = I*X12*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
+        X[2][1] = -I*X12*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         X[2][2] = X22*2.0*M_PI*wp0*wp0*iw*dppara*dpperp*4.0;
         //cout<<1.0 + X[0][0]<<", "<<X[0][1]<<", "<<1.0 + X[1][1]<<", "<<1.0 + X[2][2]<<endl;
         //cout<<X[0][0]<<", "<<X[0][1]<<", "<<X[1][1]<<", "<<X[2][2]<<endl;
