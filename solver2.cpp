@@ -1245,32 +1245,44 @@ public:
 
         cdouble detM = 0.0;
 
-        X[0][0] -= nz*nz;
-        X[1][1] -= nx*nx + nz*nz;
-        X[2][2] -= nx*nx;
-        X[0][2] += nx*nz;
-        X[2][0] += nx*nz;
-
-        detM += X[0][0]*(X[1][1]*X[2][2] - X[1][2]*X[2][1]);
-        detM += X[1][0]*(X[2][1]*X[0][2] - X[2][2]*X[0][1]);
-        detM += X[2][0]*(X[0][1]*X[1][2] - X[0][2]*X[1][1]);
-
-//        detM += nz*nz*nx*nx*X[2][2];
-//        detM += nz*nz*nz*nz*X[2][2];
-//        detM += X[0][0]*nz*nz*nx*nx;
-//        detM += X[0][0]*nx*nx*nx*nx;
-//        detM +=-nz*nz*X[1][1]*X[2][2];
-//        detM +=-X[0][0]*nx*nx*X[2][2];
-//        detM +=-X[0][0]*nz*nz*X[2][2];
-//        detM += -nx*nx*X[0][0]*X[1][1];
-//        detM += X[0][1]*X[1][0]*nx*nx;
-//        detM += nx*nz*X[0][1]*X[1][2];
-//        detM += X[2][1]*nz*nz*X[1][2];
+//        X[0][0] -= nz*nz;
+//        X[1][1] -= nx*nx + nz*nz;
+//        X[2][2] -= nx*nx;
+//        X[0][2] += nx*nz;
+//        X[2][0] += nx*nz;
 //
-//        detM += X[0][0]*X[1][1]*X[2][2];
-//        detM +=-X[0][1]*X[1][0]*X[2][2];
-//        detM +=-X[1][1]*X[2][0]*X[0][2];
-//        detM +=-X[2][1]*X[0][0]*X[1][2];
+//        detM += X[0][0]*(X[1][1]*X[2][2] - X[1][2]*X[2][1]);
+//        detM += X[1][0]*(X[2][1]*X[0][2] - X[2][2]*X[0][1]);
+//        detM += X[2][0]*(X[0][1]*X[1][2] - X[0][2]*X[1][1]);
+
+        detM += nz*nz*nx*nx*X[2][2];
+        detM += nz*nz*nz*nz*X[2][2];
+        detM += nz*nz*nz*nx*X[0][2];
+        detM += nz*nx*nx*nx*X[2][0];
+        detM += X[0][0]*nz*nz*nx*nx;
+        detM += X[0][0]*nx*nx*nx*nx;
+
+        detM +=-nz*nz*X[1][1]*X[2][2];
+        detM +=-X[0][0]*nx*nx*X[2][2];
+        detM +=-X[0][0]*nz*nz*X[2][2];
+        detM += -nx*nx*X[0][0]*X[1][1];
+        detM += -X[0][1]*X[1][0]*nx*nx;
+        detM += X[0][2]*X[2][0]*nx*nx;
+        detM += X[0][2]*X[2][0]*nz*nz;
+        detM += -X[2][1]*nz*nz*X[1][2];
+        detM += -nx*nz*X[1][1]*X[0][2];
+        detM += -X[2][0]*X[1][1]*nx*nz;
+        detM += nx*nz*X[0][1]*X[1][2];
+        detM += X[1][0]*X[2][1]*nx*nz;
+
+
+        detM += X[2][0]*X[0][1]*X[1][2];
+        detM += X[1][0]*X[2][1]*X[0][2];
+        detM += X[0][0]*X[1][1]*X[2][2];
+        detM +=X[0][1]*X[1][0]*X[2][2];
+        detM +=-X[1][1]*X[2][0]*X[0][2];
+        detM +=X[2][1]*X[0][0]*X[1][2];
+
 
         return detM*pow(wr, 4) / pow((kpara * kpara + kperp * kperp) * cl * cl, 2);
     }
