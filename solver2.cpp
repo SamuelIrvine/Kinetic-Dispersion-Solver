@@ -1268,7 +1268,7 @@ public:
         detM +=-X[0][0]*nx*nx*X[2][2];
         detM +=-X[0][0]*nz*nz*X[2][2];
         detM +=-nx*nx*X[0][0]*X[1][1];
-        detM +=-X[0][1]*X[1][0]*nx*nx;
+        detM += X[0][1]*X[1][0]*nx*nx;
         detM += X[0][2]*X[2][0]*nx*nx;
         detM += X[0][2]*X[2][0]*nz*nz;
         detM += X[2][1]*nz*nz*X[1][2];
