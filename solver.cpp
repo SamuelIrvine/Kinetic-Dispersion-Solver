@@ -411,6 +411,7 @@ public:
         //cout<<polyEval(M[2][2], kpara, kperp)/(pow(kpara, 4)*pow(kperp, 2))<<endl;
 
         cdouble c2_w2 = pow(cl / cdouble{wr, wi}, 2);
+        double wa = sqrt(wr*wr + wi*wi);
 
         M[0][0][2][6] -= c2_w2;
         M[0][2][3][5] += c2_w2;
@@ -420,7 +421,7 @@ public:
         M[2][2][4][4] -= c2_w2;
 
         cdouble det = polyDet(M, kpara, kperp) / (pow(kpara, 12) * pow(kperp, 6));
-        return det * pow(wr, 4) / pow((kpara * kpara + kperp * kperp) * cl * cl, 2);
+        return det * pow(wa, 4) / pow((kpara * kpara + kperp * kperp) * cl * cl, 2);
     }
 
     np::ndarray marginalize(const np::ndarray &arr) {
