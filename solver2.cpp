@@ -1037,7 +1037,7 @@ public://TODO: private later
                 U2[i][j] = (pperp_h[i]*df_dppara_h[i][j] - ppara_h[j]*df_dpperp_h[i][j])*igamma[i][j]*igamma[i][j]*(1.0/mass);
                 U3[i][j] = ppara_h[j]*(pperp_h[i]*df_dppara_h[i][j] - ppara_h[j]*df_dpperp_h[i][j])*igamma[i][j]*igamma[i][j]*(1.0/mass);
                 W0[i][j] = ppara_h[j]*pperp_h[i]*df_dppara_h[i][j]*igamma[i][j];
-                W1[i][j] = wc0*ppara_h[j]*(ppara_h[j]*df_dpperp_h[i][j] - pperp_h[i]*df_dppara_h[i][j])*(igamma[i][j]*igamma[i][j]);
+                W1[i][j] = ppara_h[j]*(ppara_h[j]*df_dpperp_h[i][j] - pperp_h[i]*df_dppara_h[i][j])*(igamma[i][j]*igamma[i][j]);
             }
         }
 
@@ -1128,7 +1128,7 @@ public://TODO: private later
                     series.accumulate(series.sX12a, U1, kp4[k], 1.0);
                     series.accumulate(series.sX12b, U3, kp4[k], kpara);
                     series.accumulate(series.sX22a, W0, kp5[k], 1.0);
-                    series.accumulate(series.sX22b, W1, kp5[k], n);
+                    series.accumulate(series.sX22b, W1, kp5[k], n*wc0);
                 }
             }
         }
@@ -1166,7 +1166,7 @@ public://TODO: private later
                         X12 += integrator.evaluate(i, j, U1, kp4[k], 1.0);
                         X12 += integrator.evaluate(i, j, U3, kp4[k], kpara)*iw;
                         X22 += integrator.evaluate(i, j, W0, kp5[k], 1.0);
-                        X22 += integrator.evaluate(i, j, W1, kp5[k], n)*iw;
+                        X22 += integrator.evaluate(i, j, W1, kp5[k], n*wc0)*iw;
                     }
                     continue;
                 }
@@ -1286,7 +1286,32 @@ public:
 //        detM +=-X[2][1]*X[0][0]*X[1][2];
 
 
-        return detM*pow(wr, 4) / pow((kpara * kpara + kperp * kperp) * cl * cl, 2);
+        return detM*pow(wr*wr + wi*wi, 2) / pow((kpara * kpara + kperp * kperp) * cl * cl, 2);
+    }
+
+    double polarity(const double wr, const double wi) { /*Unfninished! This is a stub! */
+        array<array<cdouble, 3>, 3> X;
+        for (RelativisticSpecies &spec: species) {
+            X+=spec.push_omega(kpara, wr, wi);
+        }
+        X[0][0] += 1.0;
+        X[1][1] += 1.0;
+        X[2][2] += 1.0;
+        cdouble w = wr + I*wi;
+        cdouble nx = cl*kperp/w;
+        cdouble nz = cl*kpara/w;
+
+        X[0][0] -= nz*nz;
+        X[1][1] -= nx*nx + nz*nz;
+        X[2][2] -= nx*nx;
+        X[0][2] += nx*nz;
+        X[2][0] += nx*nz;
+
+        cout<<"("<<X[0][0]<<", "<<X[0][1]<<", "<<X[0][2]
+            <<"), ("<<X[1][0]<<", "<<X[1][1]<<", "<<X[1][2]<<"), ("
+            <<X[2][0]<<", "<<X[2][1]<<", "<<X[2][2]<<")"<<endl;
+
+        return 1.0;
     }
 
     np::ndarray marginalize(const np::ndarray &arr) {
@@ -1324,6 +1349,7 @@ BOOST_PYTHON_MODULE (libRelativisticSolver) {
             .def("push_kperp", &RelativisticSolver::push_kperp)
             .def("push_kpara", &RelativisticSolver::push_kpara)
             .def("evaluate", &RelativisticSolver::evaluate)
+            .def("polarity", &RelativisticSolver::polarity)
             .def("marginalize", &RelativisticSolver::marginalize);
 
 }
