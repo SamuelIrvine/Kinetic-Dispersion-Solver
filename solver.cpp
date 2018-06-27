@@ -68,51 +68,61 @@ const inline array<T, N> &operator-=(array<T, N> &a, const T2 &b) {
     return a;
 };
 
-template<size_t M1, size_t M2, size_t N1, size_t N2, typename T>
-static array<array<T, N1 + N2 - 1>, M1 + M2 - 1>
-polyMul(const array<array<T, N1>, M1> &a1, const array<array<T, N2>, M2> &a2) {
-    array<array<T, N1 + N2 - 1>, M1 + M2 - 1> p{};
-    for (size_t i = 0; i < M1; i++) {
-        for (size_t j = 0; j < N1; j++) {
-            for (size_t k = 0; k < M2; k++) {
-                for (size_t l = 0; l < N2; l++) {
-                    p[i + k][j + l] += a1[i][j] * a2[k][l];
-                }
-            }
-        }
-    }
-    return p;
-};
+//template<size_t M1, size_t M2, size_t N1, size_t N2, typename T>
+//static array<array<T, N1 + N2 - 1>, M1 + M2 - 1>
+//polyMul(const array<array<T, N1>, M1> &a1, const array<array<T, N2>, M2> &a2) {
+//    array<array<T, N1 + N2 - 1>, M1 + M2 - 1> p{};
+//    for (size_t i = 0; i < M1; i++) {
+//        for (size_t j = 0; j < N1; j++) {
+//            for (size_t k = 0; k < M2; k++) {
+//                for (size_t l = 0; l < N2; l++) {
+//                    p[i + k][j + l] += a1[i][j] * a2[k][l];
+//                }
+//            }
+//        }
+//    }
+//    return p;
+//};
 
-template<size_t M, size_t N, typename T>
-static T polyEval(const array<array<T, N>, M> &p, const double &x, const double &y) {
-    T sum{};
-    double py{1.0};
-    for (size_t i = 0; i < M; i++) {
-        double px{1.0};
-        for (size_t j = 0; j < N; j++) {
-            sum += px * py * p[i][j];
-            px *= x;
-        }
-        py *= y;
-    }
-    return sum;
-};
+//template<size_t M, size_t N, typename T>
+//static T polyEval(const array<array<T, N>, M> &p, const double &x, const double &y) {
+//    T sum{};
+//    double py{1.0};
+//    for (size_t i = 0; i < M; i++) {
+//        double px{1.0};
+//        for (size_t j = 0; j < N; j++) {
+//            sum += px * py * p[i][j];
+//            px *= x;
+//        }
+//        py *= y;
+//    }
+//    return sum;
+//};
 
 
-template<size_t M, size_t N, typename T, typename X, typename Y>
-static T polyDet(const array<array<array<array<T, N>, M>, 3>, 3> &p, const X &x, const Y &y) {
-    //array<array<T, N*3-2>, M*3-2> sum{};
+//template<size_t M, size_t N, typename T, typename X, typename Y>
+//static T polyDet(const array<array<array<array<T, N>, M>, 3>, 3> &p, const X &x, const Y &y) {
+//    //array<array<T, N*3-2>, M*3-2> sum{};
+//    T sum{};
+//    for (size_t i = 0; i < 3; i++) {
+//        //sum+=polyMul(polyMul(p[1][(i+1)%3], p[2][(i+2)%3]), p[0][i]);
+//        //sum-=polyMul(polyMul(p[1][(i+2)%3], p[2][(i+1)%3]), p[0][i]);
+//
+//        sum += polyEval(p[1][(i + 1) % 3], x, y) * polyEval(p[2][(i + 2) % 3], x, y) * polyEval(p[0][i], x, y);
+//        sum -= polyEval(p[1][(i + 2) % 3], x, y) * polyEval(p[2][(i + 1) % 3], x, y) * polyEval(p[0][i], x, y);
+//    }
+//    return sum;
+//    //return polyEval(sum, x, y);
+//};
+
+template<typename T>
+static T det(const array<array<T, 3>, 3> &p) {
     T sum{};
     for (size_t i = 0; i < 3; i++) {
-        //sum+=polyMul(polyMul(p[1][(i+1)%3], p[2][(i+2)%3]), p[0][i]);
-        //sum-=polyMul(polyMul(p[1][(i+2)%3], p[2][(i+1)%3]), p[0][i]);
-
-        sum += polyEval(p[1][(i + 1) % 3], x, y) * polyEval(p[2][(i + 2) % 3], x, y) * polyEval(p[0][i], x, y);
-        sum -= polyEval(p[1][(i + 2) % 3], x, y) * polyEval(p[2][(i + 1) % 3], x, y) * polyEval(p[0][i], x, y);
+        sum += p[1][(i + 1) % 3] * p[2][(i + 2) % 3] * p[0][i];
+        sum -= p[1][(i + 2) % 3] * p[2][(i + 1) % 3] * p[0][i];
     }
     return sum;
-    //return polyEval(sum, x, y);
 };
 
 class Species {
@@ -240,8 +250,8 @@ public://TODO: private later
         }
     }
 
-    array<array<array<array<cdouble, 7>, 5>, 3>, 3> push_omega(const double kpara, const double wr, const double wi) {
-        array<array<array<array<cdouble, 7>, 5>, 3>, 3> XP{};
+    array<array<cdouble, 3>, 3> push_omega(const double kpara, const double kperp, const double wr, const double wi) {
+        array<array<cdouble, 3>, 3> XP{};
         for (size_t ni = 0; ni < ns.size(); ni++) {
             int n{ns[ni]};
             double a{wr};
@@ -266,101 +276,68 @@ public://TODO: private later
                 //cdouble clogfac{log((apb - d - vpara_hp[i]*kpara)/(apb - d - vpara_hm[i]*kpara))};
                 //cdouble clogfac{log((apb - d - vpara_hm[i]*kpara - dv1[i]*kpara)/(apb - d - vpara_hm[i]*kpara))};
                 //cdouble clogfac{log(1.0 - (dv1[i]*kpara)/(apb - d - vpara_hm[i]*kpara))};
+
+
+
                 double advkm = a - d - vpara_hm[i] * kpara;
                 double rlogfac = 0.5 * log1p(dv1[i] * kpara * (dv1[i] * kpara - 2.0 * advkm) / (advkm * advkm + b2));
-                //cdouble temp = (apbmd - vpara_hp[i] * kpara) / (apbmd - vpara_hm[i] * kpara);
-
-                //Division by complex number...?
-                //(e + if) = (a + ib)/(c + id)
-                //e = (a*c + b*d)/(d*d + c*c)
-                //f = (b*c - d*a)/(d*d + c*c)
-                //----- Validated ----
-                //a = a - d - vpara_hp[i] * kpara
-                //b = b
-                //c = a - d - vpara_hm[i] * kpara
-                //d = b
-
-                //norm = 1.0/(b2 + advkm*advkm)
-                //e = (advkp*advkm + b2)*norm
-                //f = (b*dv1[i])*norm
-                //double ilogfac = atan2(temp.imag(), temp.real());
                 double ilogfac = atan2(abs(b)*dv1[i]*kpara, (advkm + dv1[i]*kpara)*advkm + b2);
-                //The absolute value is taken to assure analytic continuation
-                //double ilogfac = temp.imag()/temp.real();
                 cdouble clogfac{rlogfac, ilogfac};
+
+                //Set up switch for complex log.
+                //Calculate to fourth order.
+
 
 
                 for (size_t k = 0; k < 6; k++) {
                     s_log_q_m[k] += clogfac * q_ms[ni][k][i];
                     s_log_q_c[k] += clogfac * q_cs[ni][k][i];
                 }
-
-                //What about computing log terms for expanded distribution???
-                //Store alot of coefficients to high order
-                //expand 1/(a + ib + c*x + d*x + c*y) ---> a terms should be on nominator
             }
 
+            double kpara2 = kpara*kpara;
+            double kpara3 = kpara2*kpara;
+            double kpara4 = kpara3*kpara;
+            double kperp2 = kperp*kperp;
+
             cdouble c00 = M_PI * 2.0 * wp * wp * wc * wc * n * n * iapb * iapb;
-            XP[0][0][0][2] -= c00 * apbmd * d * s_log_q_m[0];
-            XP[0][0][0][3] -= c00 * (d * (s_dv1_q_m[0] + s_log_q_c[0]) + apbmd * s_log_q_m[1]);
-            XP[0][0][0][4] -= c00 * (-s_dv1_q_c[0] + s_dv1_q_m[1] - 0.5 * s_dv2_q_m[0] + s_log_q_c[1]);
+            XP[0][0] -= kpara2*c00 * apbmd * d * s_log_q_m[0];
+            XP[0][0] -= kpara3*c00 * (d * (s_dv1_q_m[0] + s_log_q_c[0]) + apbmd * s_log_q_m[1]);
+            XP[0][0] -= kpara4*c00 * (-s_dv1_q_c[0] + s_dv1_q_m[1] - 0.5 * s_dv2_q_m[0] + s_log_q_c[1]);
 
             cdouble c01 = M_PI * 2.0 * wp * wp * n * wc * cdouble{0.0, 1.0} * iapb * iapb;
-            XP[0][1][1][2] -= c01 * apbmd * d * s_log_q_m[2];
-            XP[0][1][1][3] -= c01 * (d * (s_dv1_q_m[2] + s_log_q_c[2]) + apbmd * s_log_q_m[3]);
-            XP[0][1][1][4] -= c01 * (-s_dv1_q_c[2] + s_dv1_q_m[3] - 0.5 * s_dv2_q_m[2] + s_log_q_c[3]);
+            XP[0][1] -= kperp*kpara2*c01 * apbmd * d * s_log_q_m[2];
+            XP[0][1] -= kperp*kpara3*c01 * (d * (s_dv1_q_m[2] + s_log_q_c[2]) + apbmd * s_log_q_m[3]);
+            XP[0][1] -= kperp*kpara4*c01 * (-s_dv1_q_c[2] + s_dv1_q_m[3] - 0.5 * s_dv2_q_m[2] + s_log_q_c[3]);
 
             cdouble c02 = M_PI * 2.0 * wp * wp * n * wc * iapb * iapb;
-            XP[0][2][1][1] -= c02 * d * apbmd * apbmd * s_log_q_m[0];
-            XP[0][2][1][2] -= c02 * apbmd * (d * s_dv1_q_m[0] + d * s_log_q_c[0] + apbmd * s_log_q_m[1]);
-            XP[0][2][1][3] -=
-                    c02 * (d * s_dv1_q_c[0] + apbmd * s_dv1_q_m[1] + 0.5 * d * s_dv2_q_m[0] + apbmd * s_log_q_c[1]);
-            XP[0][2][1][4] -=
-                    c02 * (s_dv1_q_c[1] - 0.5 * s_dv2_q_c[0] + 0.5 * s_dv2_q_m[1] - (1.0 / 3.0) * s_dv3_q_m[0]);
-
-            cdouble c10 = M_PI * 2.0 * wp * wp * n * wc * cdouble{0.0, -1.0} * iapb * iapb;
-            XP[1][0][1][2] -= c10 * apbmd * d * s_log_q_m[2];
-            XP[1][0][1][3] -= c10 * (d * (s_dv1_q_m[2] + s_log_q_c[2]) + apbmd * s_log_q_m[3]);
-            XP[1][0][1][4] -= c10 * (-s_dv1_q_c[2] + s_dv1_q_m[3] - 0.5 * s_dv2_q_m[2] + s_log_q_c[3]);
+            XP[0][2] -= kperp*kpara*c02 * d * apbmd * apbmd * s_log_q_m[0];
+            XP[0][2] -= kperp*kpara2*c02 * apbmd * (d * s_dv1_q_m[0] + d * s_log_q_c[0] + apbmd * s_log_q_m[1]);
+            XP[0][2] -= kperp*kpara3*c02 * (d * s_dv1_q_c[0] + apbmd * s_dv1_q_m[1] + 0.5 * d * s_dv2_q_m[0] + apbmd * s_log_q_c[1]);
+            XP[0][2] -= kperp*kpara4*c02 * (s_dv1_q_c[1] - 0.5 * s_dv2_q_c[0] + 0.5 * s_dv2_q_m[1] - (1.0 / 3.0) * s_dv3_q_m[0]);
 
             cdouble c11 = M_PI * 2.0 * wp * wp * iapb * iapb;
-            XP[1][1][2][2] -= c11 * apbmd * d * s_log_q_m[4];
-            XP[1][1][2][3] -= c11 * (d * (s_dv1_q_m[4] + s_log_q_c[4]) + apbmd * s_log_q_m[5]);
-            XP[1][1][2][4] -= c11 * (-s_dv1_q_c[4] + s_dv1_q_m[5] - 0.5 * s_dv2_q_m[4] + s_log_q_c[5]);
+            XP[1][1] -= kperp2*kpara2*c11 * apbmd * d * s_log_q_m[4];
+            XP[1][1] -= kperp2*kpara3*c11 * (d * (s_dv1_q_m[4] + s_log_q_c[4]) + apbmd * s_log_q_m[5]);
+            XP[1][1] -= kperp2*kpara4*c11 * (-s_dv1_q_c[4] + s_dv1_q_m[5] - 0.5 * s_dv2_q_m[4] + s_log_q_c[5]);
 
             cdouble c12 = M_PI * 2.0 * wp * wp * cdouble{0.0, -1.0} * iapb * iapb;
-            XP[1][2][2][1] -= c12 * d * apbmd * apbmd * s_log_q_m[2];
-            XP[1][2][2][2] -= c12 * apbmd * (d * s_dv1_q_m[2] + d * s_log_q_c[2] + apbmd * s_log_q_m[3]);
-            XP[1][2][2][3] -=
-                    c12 * (d * s_dv1_q_c[2] + apbmd * s_dv1_q_m[3] + 0.5 * d * s_dv2_q_m[2] + apbmd * s_log_q_c[3]);
-            XP[1][2][2][4] -=
-                    c12 * (s_dv1_q_c[3] - 0.5 * s_dv2_q_c[2] + 0.5 * s_dv2_q_m[3] - (1.0 / 3.0) * s_dv3_q_m[2]);
-
-            cdouble c20 = M_PI * 2.0 * wp * wp * n * wc * iapb * iapb;
-            XP[2][0][1][1] -= c20 * d * apbmd * apbmd * s_log_q_m[0];
-            XP[2][0][1][2] -= c20 * apbmd * (d * s_dv1_q_m[0] + d * s_log_q_c[0] + apbmd * s_log_q_m[1]);
-            XP[2][0][1][3] -=
-                    c20 * (d * s_dv1_q_c[0] + apbmd * s_dv1_q_m[1] + 0.5 * d * s_dv2_q_m[0] + apbmd * s_log_q_c[1]);
-            XP[2][0][1][4] -=
-                    c20 * (s_dv1_q_c[1] - 0.5 * s_dv2_q_c[0] + 0.5 * s_dv2_q_m[1] - (1.0 / 3.0) * s_dv3_q_m[0]);
-
-            cdouble c21 = M_PI * 2.0 * wp * wp * cdouble{0.0, 1.0} * iapb * iapb;
-            XP[2][1][2][1] -= c21 * d * apbmd * apbmd * s_log_q_m[2];
-            XP[2][1][2][2] -= c21 * apbmd * (d * s_dv1_q_m[2] + d * s_log_q_c[2] + apbmd * s_log_q_m[3]);
-            XP[2][1][2][3] -=
-                    c21 * (d * s_dv1_q_c[2] + apbmd * s_dv1_q_m[3] + 0.5 * d * s_dv2_q_m[2] + apbmd * s_log_q_c[3]);
-            XP[2][1][2][4] -=
-                    c21 * (s_dv1_q_c[3] - 0.5 * s_dv2_q_c[2] + 0.5 * s_dv2_q_m[3] - (1.0 / 3.0) * s_dv3_q_m[2]);
+            XP[1][2] -= kperp2*kpara*c12 * d * apbmd * apbmd * s_log_q_m[2];
+            XP[1][2] -= kperp2*kpara2*c12 * apbmd * (d * s_dv1_q_m[2] + d * s_log_q_c[2] + apbmd * s_log_q_m[3]);
+            XP[1][2] -= kperp2*kpara3*c12 * (d * s_dv1_q_c[2] + apbmd * s_dv1_q_m[3] + 0.5 * d * s_dv2_q_m[2] + apbmd * s_log_q_c[3]);
+            XP[1][2] -= kperp2*kpara4*c12 * (s_dv1_q_c[3] - 0.5 * s_dv2_q_c[2] + 0.5 * s_dv2_q_m[3] - (1.0 / 3.0) * s_dv3_q_m[2]);
 
             cdouble c22 = M_PI * 2.0 * wp * wp * iapb * iapb;
-            XP[2][2][2][0] -= c22 * apbmd * apbmd * apbmd * d * s_log_q_m[0];
-            XP[2][2][2][1] -= c22 * (apbmd * apbmd * (apbmd * s_log_q_m[1] + d * (s_dv1_q_m[0] + s_log_q_c[0])));
-            XP[2][2][2][2] -=
-                    c22 * (apbmd * (apbmd * (s_dv1_q_m[1] + s_log_q_c[1]) + d * s_dv1_q_c[0] + 0.5 * d * s_dv2_q_m[0]));
-            XP[2][2][2][3] -= c22 * (apbmd * (s_dv1_q_c[1] + 0.5 * s_dv2_q_m[1]) + 0.5 * d * s_dv2_q_c[0] +
+            XP[2][2] -= kperp2*c22 * apbmd * apbmd * apbmd * d * s_log_q_m[0];
+            XP[2][2] -= kperp2*kpara*c22 * (apbmd * apbmd * (apbmd * s_log_q_m[1] + d * (s_dv1_q_m[0] + s_log_q_c[0])));
+            XP[2][2] -= kperp2*kpara2*c22 * (apbmd * (apbmd * (s_dv1_q_m[1] + s_log_q_c[1]) + d * s_dv1_q_c[0] + 0.5 * d * s_dv2_q_m[0]));
+            XP[2][2] -= kperp2*kpara3*c22 * (apbmd * (s_dv1_q_c[1] + 0.5 * s_dv2_q_m[1]) + 0.5 * d * s_dv2_q_c[0] +
                                      (1.0 / 3.0) * d * s_dv3_q_m[0]);
         }
 
+        XP[1][0] = -XP[0][1];
+        XP[2][0] = XP[0][2];
+        XP[2][1] = -XP[1][2];
         return XP;
     }
 };
@@ -393,49 +370,47 @@ public:
     }
 
     cdouble evaluate(const double wr, const double wi) {
-        array<array<array<array<cdouble, 7>, 5>, 3>, 3> M{};
+        array<array<cdouble, 3>, 3> M{};
         for (Species &spec: species) {
-            M += spec.push_omega(kpara, wr, wi);
+            M += spec.push_omega(kpara, kperp, wr, wi);
         }
 
-        M[0][0][2][4] += 1.0;
-        M[1][1][2][4] += 1.0;
-        M[2][2][2][4] += 1.0;
+        double kperp2 = kperp*kperp;
+        double kperp3 = kperp2*kperp;
+        double kperp4 = kperp2*kperp2;
+        double kpara2 = kpara*kpara;
+        double kpara4 = kpara2*kpara2;
+        double kpara5 = kpara4*kpara;
+        double kpara6 = kpara4*kpara2;
 
-        //cout<<polyEval(M[0][0], kpara, kperp)/(pow(kpara, 4)*pow(kperp, 2))<<endl;
-        //cout<<polyEval(M[0][1], kpara, kperp)/(pow(kpara, 4)*pow(kperp, 2))<<endl;
-        //cout<<polyEval(M[1][0], kpara, kperp)/(pow(kpara, 4)*pow(kperp, 2))<<endl;
-        //cout<<polyEval(M[1][1], kpara, kperp)/(pow(kpara, 4)*pow(kperp, 2))<<endl;
-        //cout<<polyEval(M[0][2], kpara, kperp)/(pow(kpara, 4)*pow(kperp, 2))<<endl;
-        //cout<<polyEval(M[2][0], kpara, kperp)/(pow(kpara, 4)*pow(kperp, 2))<<endl;
-        //cout<<polyEval(M[1][2], kpara, kperp)/(pow(kpara, 4)*pow(kperp, 2))<<endl;
-        //cout<<polyEval(M[2][1], kpara, kperp)/(pow(kpara, 4)*pow(kperp, 2))<<endl;
-        //cout<<polyEval(M[2][2], kpara, kperp)/(pow(kpara, 4)*pow(kperp, 2))<<endl;
+        M[0][0] += kperp2*kpara4;
+        M[1][1] += kperp2*kpara4;
+        M[2][2] += kperp2*kpara4;
 
         cdouble c2_w2 = pow(cl / cdouble{wr, wi}, 2);
         double wa = sqrt(wr*wr + wi*wi);
 
-        M[0][0][2][6] -= c2_w2;
-        M[0][2][3][5] += c2_w2;
-        M[1][1][2][6] -= c2_w2;
-        M[1][1][4][4] -= c2_w2;
-        M[2][0][3][5] += c2_w2;
-        M[2][2][4][4] -= c2_w2;
+        M[0][0] -= c2_w2*kperp2*kpara6;
+        M[0][2] += c2_w2*kperp3*kpara5;
+        M[1][1] -= c2_w2*kperp2*kpara6;
+        M[1][1] -= c2_w2*kperp4*kpara4;
+        M[2][0] += c2_w2*kperp3*kpara5;
+        M[2][2] -= c2_w2*kperp4*kpara4;
 
-        cdouble det = polyDet(M, kpara, kperp) / (pow(kpara, 12) * pow(kperp, 6));
-        return det * pow(wa, 4) / pow((kpara * kpara + kperp * kperp) * cl * cl, 2);
+        cdouble detM = det(M) / (pow(kpara, 12) * pow(kperp, 6));
+        return detM * pow(wa, 4) / pow((kpara * kpara + kperp * kperp) * cl * cl, 2);
     }
 
     double polarity(const double wr, const double wi) { /*Unfinished! This is a stub!*/
         array<array<array<array<cdouble, 7>, 5>, 3>, 3> M{};
         array<array<cdouble, 3>, 3> Mv{};
-        for (Species &spec: species) {
-            M += spec.push_omega(kpara, wr, wi);
-        }
+//        for (Species &spec: species) {
+//            M += spec.push_omega(kpara, wr, wi);
+//        }
 
-        M[0][0][2][4] += 1.0;
-        M[1][1][2][4] += 1.0;
-        M[2][2][2][4] += 1.0;
+//        M[0][0][2][4] += 1.0;
+//        M[1][1][2][4] += 1.0;
+//        M[2][2][2][4] += 1.0;
 
         cdouble c2_w2 = pow(cl / cdouble{wr, wi}, 2);
 
@@ -446,11 +421,11 @@ public:
         //M[2][0][3][5] += c2_w2;
         //M[2][2][4][4] -= c2_w2;
 
-        for (size_t i=0;i<3;i++){
-            for (size_t j=0;j<3;j++){
-                Mv[i][j] = polyEval(M[i][j], kpara, kperp)/(pow(kpara, 4)*pow(kperp, 2));
-            }
-        }
+//        for (size_t i=0;i<3;i++){
+//            for (size_t j=0;j<3;j++){
+//                Mv[i][j] = polyEval(M[i][j], kpara, kperp)/(pow(kpara, 4)*pow(kperp, 2));
+//            }
+//        }
 
         cout<<"("<<Mv[0][0]<<", "<<Mv[0][1]<<", "<<Mv[0][2]<<")"<<endl;
         cout<<"("<<Mv[1][0]<<", "<<Mv[1][1]<<", "<<Mv[1][2]<<")"<<endl;
