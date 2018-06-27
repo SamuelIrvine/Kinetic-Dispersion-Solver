@@ -264,6 +264,8 @@ public://TODO: private later
 
             for (size_t i = 0; i < npara - 1; i++) {
                 //cdouble clogfac{log((apb - d - vpara_hp[i]*kpara)/(apb - d - vpara_hm[i]*kpara))};
+                //cdouble clogfac{log((apb - d - vpara_hm[i]*kpara - dv1[i]*kpara)/(apb - d - vpara_hm[i]*kpara))};
+                //cdouble clogfac{log(1.0 - (dv1[i]*kpara)/(apb - d - vpara_hm[i]*kpara))};
                 double advkm = a - d - vpara_hm[i] * kpara;
                 double rlogfac = 0.5 * log1p(dv1[i] * kpara * (dv1[i] * kpara - 2.0 * advkm) / (advkm * advkm + b2));
                 //cdouble temp = (apbmd - vpara_hp[i] * kpara) / (apbmd - vpara_hm[i] * kpara);
@@ -424,6 +426,39 @@ public:
         return det * pow(wa, 4) / pow((kpara * kpara + kperp * kperp) * cl * cl, 2);
     }
 
+    double polarity(const double wr, const double wi) { /*Unfinished! This is a stub!*/
+        array<array<array<array<cdouble, 7>, 5>, 3>, 3> M{};
+        array<array<cdouble, 3>, 3> Mv{};
+        for (Species &spec: species) {
+            M += spec.push_omega(kpara, wr, wi);
+        }
+
+        M[0][0][2][4] += 1.0;
+        M[1][1][2][4] += 1.0;
+        M[2][2][2][4] += 1.0;
+
+        cdouble c2_w2 = pow(cl / cdouble{wr, wi}, 2);
+
+        //M[0][0][2][6] -= c2_w2;
+        //M[0][2][3][5] += c2_w2;
+        //M[1][1][2][6] -= c2_w2;
+        //M[1][1][4][4] -= c2_w2;
+        //M[2][0][3][5] += c2_w2;
+        //M[2][2][4][4] -= c2_w2;
+
+        for (size_t i=0;i<3;i++){
+            for (size_t j=0;j<3;j++){
+                Mv[i][j] = polyEval(M[i][j], kpara, kperp)/(pow(kpara, 4)*pow(kperp, 2));
+            }
+        }
+
+        cout<<"("<<Mv[0][0]<<", "<<Mv[0][1]<<", "<<Mv[0][2]<<")"<<endl;
+        cout<<"("<<Mv[1][0]<<", "<<Mv[1][1]<<", "<<Mv[1][2]<<")"<<endl;
+        cout<<"("<<Mv[2][0]<<", "<<Mv[2][1]<<", "<<Mv[2][2]<<")"<<endl;
+
+        return 1.0;
+    }
+
     np::ndarray marginalize(const np::ndarray &arr) {
         int nd = arr.get_nd();
         Py_intptr_t const *shape = arr.get_shape();
@@ -456,6 +491,7 @@ BOOST_PYTHON_MODULE (libSolver) {
             .def("push_kperp", &Solver::push_kperp)
             .def("push_kpara", &Solver::push_kpara)
             .def("evaluate", &Solver::evaluate)
+            .def("polarity", &Solver::polarity)
             .def("marginalize", &Solver::marginalize);
 
 }
