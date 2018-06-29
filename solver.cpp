@@ -17,6 +17,7 @@ typedef vector<vector<double>> arr2d;
 
 const double e0 = 8.85E-12; //TODO: increase precision
 const double cl = 3E8;
+const cdouble I{0.0, 1.0};
 //const double mu0 = cl*cl*e0;
 
 static arr1d extract1d(const p::api::const_object_attribute &obj) {
@@ -132,12 +133,10 @@ public://TODO: private later
     arr2d df_dvpara_h, df_dvperp_h;
     arr1d dvperp_h;
     arr1d vpara_h, vperp_h;
-    arr1d vpara_hm, vpara_hp, dv1, dv2, dv3;
+    arr1d vpara_hm, vpara_hp, dv1, dv2, dv3, dv4, dv5, dv6, dv7, dv8;
     vector<int> ns;
     vector<arr1d> jns, jnps;
     vector<array<arr1d, 6>> qs, q_ms, q_cs;
-    vector<array<double, 6>> s_dv1_q_ms, s_dv2_q_ms, s_dv3_q_ms;
-    vector<array<double, 6>> s_dv1_q_cs, s_dv2_q_cs;
     double charge, mass, density;
     double wp, wc;
     size_t npara, nperp;
@@ -169,11 +168,6 @@ public://TODO: private later
                             arr1d(npara - 1)});
             q_cs.push_back({arr1d(npara - 1), arr1d(npara - 1), arr1d(npara - 1), arr1d(npara - 1), arr1d(npara - 1),
                             arr1d(npara - 1)});
-            s_dv1_q_ms.push_back({});
-            s_dv2_q_ms.push_back({});
-            s_dv3_q_ms.push_back({});
-            s_dv1_q_cs.push_back({});
-            s_dv2_q_cs.push_back({});
         }
 
         dvperp_h = arr1d(nperp - 1);
@@ -182,6 +176,11 @@ public://TODO: private later
         dv1 = arr1d(npara - 1);
         dv2 = arr1d(npara - 1);
         dv3 = arr1d(npara - 1);
+        dv4 = arr1d(npara - 1);
+        dv5 = arr1d(npara - 1);
+        dv6 = arr1d(npara - 1);
+        dv7 = arr1d(npara - 1);
+        dv8 = arr1d(npara - 1);
 
         for (size_t i = 0; i < nperp - 1; i++) {
             dvperp_h[i] = vperp_h[i + 1] - vperp_h[i];
@@ -193,6 +192,11 @@ public://TODO: private later
             dv1[i] = pow(vpara_hp[i], 1) - pow(vpara_hm[i], 1);
             dv2[i] = pow(vpara_hp[i], 2) - pow(vpara_hm[i], 2);
             dv3[i] = pow(vpara_hp[i], 3) - pow(vpara_hm[i], 3);
+            dv4[i] = pow(vpara_hp[i], 4) - pow(vpara_hm[i], 4);
+            dv5[i] = pow(vpara_hp[i], 5) - pow(vpara_hm[i], 5);
+            dv6[i] = pow(vpara_hp[i], 6) - pow(vpara_hm[i], 6);
+            dv7[i] = pow(vpara_hp[i], 7) - pow(vpara_hm[i], 7);
+            dv8[i] = pow(vpara_hp[i], 8) - pow(vpara_hm[i], 8);
         }
 
     }
@@ -227,26 +231,12 @@ public://TODO: private later
                     qs[ni][k][i] = qh[k];
                 }
             }
-            for (size_t k = 0; k < 6; k++) {
-                s_dv1_q_ms[ni][k] = 0.0;
-                s_dv2_q_ms[ni][k] = 0.0;
-                s_dv3_q_ms[ni][k] = 0.0;
-                s_dv1_q_cs[ni][k] = 0.0;
-                s_dv2_q_cs[ni][k] = 0.0;
-            }
             for (size_t i = 0; i < npara - 1; i++) {
                 for (size_t k = 0; k < 6; k++) {
                     q_ms[ni][k][i] = (qs[ni][k][i + 1] - qs[ni][k][i]) / dv1[i];
                     q_cs[ni][k][i] = qs[ni][k][i] - q_ms[ni][k][i] * vpara_hm[i];
-                    s_dv1_q_ms[ni][k] += q_ms[ni][k][i] * dv1[i];
-                    s_dv2_q_ms[ni][k] += q_ms[ni][k][i] * dv2[i];
-                    s_dv3_q_ms[ni][k] += q_ms[ni][k][i] * dv3[i];
-                    s_dv1_q_cs[ni][k] += q_cs[ni][k][i] * dv1[i];
-                    s_dv2_q_cs[ni][k] += q_cs[ni][k][i] * dv2[i];
                 }
             }
-            //Now add up distributions
-
         }
     }
 
@@ -260,39 +250,76 @@ public://TODO: private later
             double d{n * wc};
             cdouble apb{a, b};
             cdouble apbmd{a - d, b};
+            cdouble apbmd2 = apbmd*apbmd;
+            cdouble apbmd3 = apbmd2*apbmd;
             cdouble iapb{1.0 / apb};
             cdouble iapbmd{1.0 / apbmd};
 
-            array<cdouble, 6> s_log_q_m{};
-            array<cdouble, 6> s_log_q_c{};
-
-            const double *s_dv1_q_m{s_dv1_q_ms[ni].data()};
-            const double *s_dv1_q_c{s_dv1_q_cs[ni].data()};
-            const double *s_dv2_q_m{s_dv2_q_ms[ni].data()};
-            const double *s_dv2_q_c{s_dv2_q_cs[ni].data()};
-            const double *s_dv3_q_m{s_dv3_q_ms[ni].data()};
+            array<cdouble, 6> s_L0_q_m{};
+            array<cdouble, 6> s_L0_q_c{};
+            array<cdouble, 6> s_L1_q_m{};
+            array<cdouble, 6> s_L1_q_c{};
+            array<cdouble, 6> s_L2_q_m{};
+            array<cdouble, 6> s_L2_q_c{};
+            array<cdouble, 6> s_L3_q_m{};
 
             for (size_t i = 0; i < npara - 1; i++) {
                 //cdouble clogfac{log((apb - d - vpara_hp[i]*kpara)/(apb - d - vpara_hm[i]*kpara))};
                 //cdouble clogfac{log((apb - d - vpara_hm[i]*kpara - dv1[i]*kpara)/(apb - d - vpara_hm[i]*kpara))};
                 //cdouble clogfac{log(1.0 - (dv1[i]*kpara)/(apb - d - vpara_hm[i]*kpara))};
 
+                //Wish to taylor expand in kpara.
+                //cdouble cx = (-dv1[i]*kpara)/(apbmd - vpara_hm[i]*kpara);
+                cdouble cx = kpara*iapbmd;
+                cdouble L0, L1, L2, L3;
+                const double narr[]{1./1., 1./2., 1./3., 1./4., 1./5., 1./5., 1./7., 1./8.};
+                if (dv1[i]*dv1[i]*(cx.real()*cx.real() + cx.imag()*cx.imag()) < 0.000001){
+                    cdouble logfacsum{0.0, 0.0};
+                    cdouble powarr[8];
+                    const cdouble dvarr[]{dv1[i], dv2[i], dv3[i], dv4[i], dv5[i], dv6[i],dv7[i], dv8[i]};
+                    powarr[0] = cx;
+                    for (size_t i = 1; i < 8;i++){
+                        powarr[i] = powarr[i-1]*(cx);
+                    }
+                    for (size_t i = 8; i > 3; i--) {
+                        logfacsum -= powarr[i-1]*(narr[i-1]*dvarr[i-1]);
+                    }
+                    L3 = logfacsum;
+                    L2 = L3 - powarr[2]*narr[2]*dvarr[2];
+                    L1 = L2 - powarr[1]*narr[1]*dvarr[1];
+                    L0 = L1 - powarr[0]*narr[0]*dvarr[0];
 
-
-                double advkm = a - d - vpara_hm[i] * kpara;
-                double rlogfac = 0.5 * log1p(dv1[i] * kpara * (dv1[i] * kpara - 2.0 * advkm) / (advkm * advkm + b2));
-                double ilogfac = atan2(abs(b)*dv1[i]*kpara, (advkm + dv1[i]*kpara)*advkm + b2);
-                cdouble clogfac{rlogfac, ilogfac};
-
-                //Set up switch for complex log.
-                //Calculate to fourth order.
-
-
+                }else{
+                    double advkm = a - d - vpara_hm[i] * kpara;
+                    double rlogfac = 0.5 * log1p(dv1[i] * kpara * (dv1[i] * kpara - 2.0 * advkm) / (advkm * advkm + b2));
+                    double ilogfac = atan2(abs(b)*dv1[i]*kpara, (advkm + dv1[i]*kpara)*advkm + b2);
+                    L0 = cdouble(rlogfac, ilogfac);
+                    cdouble powarr[3];
+                    const cdouble dvarr[]{dv1[i], dv2[i], dv3[i]};
+                    powarr[0] = cx;
+                    for (size_t i = 1; i < 3;i++){
+                        powarr[i] = powarr[i-1]*(cx);
+                    }
+                    L1 = L0 + powarr[0]*narr[0]*dvarr[0];
+                    L2 = L1 + powarr[1]*narr[1]*dvarr[1];
+                    L3 = L2 + powarr[2]*narr[2]*dvarr[2];
+                }
 
                 for (size_t k = 0; k < 6; k++) {
-                    s_log_q_m[k] += clogfac * q_ms[ni][k][i];
-                    s_log_q_c[k] += clogfac * q_cs[ni][k][i];
+                    s_L0_q_m[k] += L0 * q_ms[ni][k][i];
+                    s_L0_q_c[k] += L0 * q_cs[ni][k][i];
+                    s_L1_q_m[k] += L1 * q_ms[ni][k][i];
                 }
+
+                for (size_t k = 0; k < 5; k++) {
+                    s_L1_q_c[k] += L1 * q_cs[ni][k][i];
+                    s_L2_q_m[k] += L2 * q_ms[ni][k][i];
+                }
+
+                s_L2_q_c[0] += L2 * q_cs[ni][0][i];
+                s_L2_q_c[2] += L2 * q_cs[ni][2][i];
+                s_L3_q_m[0] += L3 * q_ms[ni][0][i];
+                s_L3_q_m[2] += L3 * q_ms[ni][2][i];
             }
 
             double kpara2 = kpara*kpara;
@@ -301,43 +328,39 @@ public://TODO: private later
             double kperp2 = kperp*kperp;
 
             cdouble c00 = M_PI * 2.0 * wp * wp * wc * wc * n * n * iapb * iapb;
-            XP[0][0] -= kpara2*c00 * apbmd * d * s_log_q_m[0];
-            XP[0][0] -= kpara3*c00 * (d * (s_dv1_q_m[0] + s_log_q_c[0]) + apbmd * s_log_q_m[1]);
-            XP[0][0] -= kpara4*c00 * (-s_dv1_q_c[0] + s_dv1_q_m[1] - 0.5 * s_dv2_q_m[0] + s_log_q_c[1]);
+            XP[0][0] -= c00*apb*(kpara2*apbmd*s_L1_q_m[0] + kpara3*s_L0_q_c[0]);
+            XP[0][0] -= c00*(kpara3*apbmd*s_L1_q_m[1] + kpara4*s_L0_q_c[1]);
+            XP[0][0] += c00*(kpara2*apbmd2*s_L2_q_m[0] + kpara3*apbmd*s_L1_q_c[0]);
 
-            cdouble c01 = M_PI * 2.0 * wp * wp * n * wc * cdouble{0.0, 1.0} * iapb * iapb;
-            XP[0][1] -= kperp*kpara2*c01 * apbmd * d * s_log_q_m[2];
-            XP[0][1] -= kperp*kpara3*c01 * (d * (s_dv1_q_m[2] + s_log_q_c[2]) + apbmd * s_log_q_m[3]);
-            XP[0][1] -= kperp*kpara4*c01 * (-s_dv1_q_c[2] + s_dv1_q_m[3] - 0.5 * s_dv2_q_m[2] + s_log_q_c[3]);
+            cdouble c01 = M_PI * 2.0 * wp * wp * n * wc * I * iapb * iapb * kperp;
+            XP[0][1] -= c01*apb*(kpara2*apbmd*s_L1_q_m[2] + kpara3*s_L0_q_c[2]);
+            XP[0][1] -= c01*(kpara3*apbmd*s_L1_q_m[3] + kpara4*s_L0_q_c[3]);
+            XP[0][1] += c01*(kpara2*apbmd2*s_L2_q_m[2] + kpara3*apbmd*s_L1_q_c[2]);
 
-            cdouble c02 = M_PI * 2.0 * wp * wp * n * wc * iapb * iapb;
-            XP[0][2] -= kperp*kpara*c02 * d * apbmd * apbmd * s_log_q_m[0];
-            XP[0][2] -= kperp*kpara2*c02 * apbmd * (d * s_dv1_q_m[0] + d * s_log_q_c[0] + apbmd * s_log_q_m[1]);
-            XP[0][2] -= kperp*kpara3*c02 * (d * s_dv1_q_c[0] + apbmd * s_dv1_q_m[1] + 0.5 * d * s_dv2_q_m[0] + apbmd * s_log_q_c[1]);
-            XP[0][2] -= kperp*kpara4*c02 * (s_dv1_q_c[1] - 0.5 * s_dv2_q_c[0] + 0.5 * s_dv2_q_m[1] - (1.0 / 3.0) * s_dv3_q_m[0]);
+            cdouble c02 = M_PI * 2.0 * wp * wp * n * wc * iapb * iapb * kperp;
+            XP[0][2] -= c02*apb*(kpara*apbmd2*s_L2_q_m[0] + kpara2*apbmd*s_L1_q_c[0]);
+            XP[0][2] -= c02*(kpara2*apbmd2*s_L2_q_m[1] + kpara3*apbmd*s_L1_q_c[1]);
+            XP[0][2] += c02*(kpara*apbmd3*s_L3_q_m[0] + kpara2*apbmd2*s_L2_q_c[0]);
 
-            cdouble c11 = M_PI * 2.0 * wp * wp * iapb * iapb;
-            XP[1][1] -= kperp2*kpara2*c11 * apbmd * d * s_log_q_m[4];
-            XP[1][1] -= kperp2*kpara3*c11 * (d * (s_dv1_q_m[4] + s_log_q_c[4]) + apbmd * s_log_q_m[5]);
-            XP[1][1] -= kperp2*kpara4*c11 * (-s_dv1_q_c[4] + s_dv1_q_m[5] - 0.5 * s_dv2_q_m[4] + s_log_q_c[5]);
+            cdouble c11 = M_PI * 2.0 * wp * wp * iapb * iapb * kperp2;
+            XP[1][1] -= c11*apb*(kpara2*apbmd*s_L1_q_m[4] + kpara3*s_L0_q_c[4]);
+            XP[1][1] -= c11*(kpara3*apbmd*s_L1_q_m[5] + kpara4*s_L0_q_c[5]);
+            XP[1][1] += c11*(kpara2*apbmd2*s_L2_q_m[4] + kpara3*apbmd*s_L1_q_c[4]);
 
-            cdouble c12 = M_PI * 2.0 * wp * wp * cdouble{0.0, -1.0} * iapb * iapb;
-            XP[1][2] -= kperp2*kpara*c12 * d * apbmd * apbmd * s_log_q_m[2];
-            XP[1][2] -= kperp2*kpara2*c12 * apbmd * (d * s_dv1_q_m[2] + d * s_log_q_c[2] + apbmd * s_log_q_m[3]);
-            XP[1][2] -= kperp2*kpara3*c12 * (d * s_dv1_q_c[2] + apbmd * s_dv1_q_m[3] + 0.5 * d * s_dv2_q_m[2] + apbmd * s_log_q_c[3]);
-            XP[1][2] -= kperp2*kpara4*c12 * (s_dv1_q_c[3] - 0.5 * s_dv2_q_c[2] + 0.5 * s_dv2_q_m[3] - (1.0 / 3.0) * s_dv3_q_m[2]);
+            cdouble c12 = M_PI * 2.0 * wp * wp * -I * iapb * iapb * kperp2;
+            XP[1][2] -= c12*apb*(kpara*apbmd2*s_L2_q_m[2] + kpara2*apbmd*s_L1_q_c[2]);
+            XP[1][2] -= c12*(kpara2*apbmd2*s_L2_q_m[3] + kpara3*apbmd*s_L1_q_c[3]);
+            XP[1][2] += c12*(kpara*apbmd3*s_L3_q_m[2] + kpara2*apbmd2*s_L2_q_c[2]);
 
-            cdouble c22 = M_PI * 2.0 * wp * wp * iapb * iapb;
-            XP[2][2] -= kperp2*c22 * apbmd * apbmd * apbmd * d * s_log_q_m[0];
-            XP[2][2] -= kperp2*kpara*c22 * (apbmd * apbmd * (apbmd * s_log_q_m[1] + d * (s_dv1_q_m[0] + s_log_q_c[0])));
-            XP[2][2] -= kperp2*kpara2*c22 * (apbmd * (apbmd * (s_dv1_q_m[1] + s_log_q_c[1]) + d * s_dv1_q_c[0] + 0.5 * d * s_dv2_q_m[0]));
-            XP[2][2] -= kperp2*kpara3*c22 * (apbmd * (s_dv1_q_c[1] + 0.5 * s_dv2_q_m[1]) + 0.5 * d * s_dv2_q_c[0] +
-                                     (1.0 / 3.0) * d * s_dv3_q_m[0]);
+            cdouble c22 = M_PI * 2.0 * wp * wp * iapb * iapb * kperp2;
+            XP[2][2] -= c22*apbmd*(kpara*apbmd2*s_L2_q_m[1] + kpara2*apbmd*s_L1_q_c[1]);
+            XP[2][2] -= c22*d*(apbmd3*s_L2_q_m[0] + kpara*apbmd2*s_L2_q_c[0]);
         }
 
         XP[1][0] = -XP[0][1];
         XP[2][0] = XP[0][2];
         XP[2][1] = -XP[1][2];
+
         return XP;
     }
 };
@@ -402,8 +425,8 @@ public:
     }
 
     double polarity(const double wr, const double wi) { /*Unfinished! This is a stub!*/
-        array<array<array<array<cdouble, 7>, 5>, 3>, 3> M{};
-        array<array<cdouble, 3>, 3> Mv{};
+//        array<array<array<array<cdouble, 7>, 5>, 3>, 3> M{};
+//        array<array<cdouble, 3>, 3> Mv{};
 //        for (Species &spec: species) {
 //            M += spec.push_omega(kpara, wr, wi);
 //        }
@@ -412,7 +435,7 @@ public:
 //        M[1][1][2][4] += 1.0;
 //        M[2][2][2][4] += 1.0;
 
-        cdouble c2_w2 = pow(cl / cdouble{wr, wi}, 2);
+//        cdouble c2_w2 = pow(cl / cdouble{wr, wi}, 2);
 
         //M[0][0][2][6] -= c2_w2;
         //M[0][2][3][5] += c2_w2;
@@ -427,9 +450,9 @@ public:
 //            }
 //        }
 
-        cout<<"("<<Mv[0][0]<<", "<<Mv[0][1]<<", "<<Mv[0][2]<<")"<<endl;
-        cout<<"("<<Mv[1][0]<<", "<<Mv[1][1]<<", "<<Mv[1][2]<<")"<<endl;
-        cout<<"("<<Mv[2][0]<<", "<<Mv[2][1]<<", "<<Mv[2][2]<<")"<<endl;
+//       cout<<"("<<Mv[0][0]<<", "<<Mv[0][1]<<", "<<Mv[0][2]<<")"<<endl;
+//        cout<<"("<<Mv[1][0]<<", "<<Mv[1][1]<<", "<<Mv[1][2]<<")"<<endl;
+//        cout<<"("<<Mv[2][0]<<", "<<Mv[2][1]<<", "<<Mv[2][2]<<")"<<endl;
 
         return 1.0;
     }
