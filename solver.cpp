@@ -273,7 +273,7 @@ public://TODO: private later
                 cdouble cx = kpara*iapbmd;
                 cdouble L0, L1, L2, L3;
                 const double narr[]{1./1., 1./2., 1./3., 1./4., 1./5., 1./5., 1./7., 1./8.};
-                if (dv1[i]*dv1[i]*(cx.real()*cx.real() + cx.imag()*cx.imag()) < -0.000001){
+                if ((vpara_hm[i]+vpara_hp[i])*(vpara_hm[i]+vpara_hp[i])*(cx.real()*cx.real() + cx.imag()*cx.imag()) < 0.000001){
                     cdouble logfacsum{0.0, 0.0};
                     cdouble powarr[8];
                     const cdouble dvarr[]{dv1[i], dv2[i], dv3[i], dv4[i], dv5[i], dv6[i],dv7[i], dv8[i]};
@@ -361,7 +361,6 @@ public://TODO: private later
         XP[2][0] = XP[0][2];
         XP[2][1] = -XP[1][2];
 
-//
 //        cout<<XP[0][0]/(kpara*kpara*kpara*kpara*kperp*kperp)<<endl;
 //        cout<<XP[0][1]/(kpara*kpara*kpara*kpara*kperp*kperp)<<endl;
 //        cout<<XP[1][1]/(kpara*kpara*kpara*kpara*kperp*kperp)<<endl;
