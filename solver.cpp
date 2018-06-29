@@ -292,7 +292,7 @@ public://TODO: private later
                 }else{
                     double advkm = a - d - vpara_hm[i] * kpara;
                     double rlogfac = 0.5 * log1p(dv1[i] * kpara * (dv1[i] * kpara - 2.0 * advkm) / (advkm * advkm + b2));
-                    double ilogfac = atan2(b*dv1[i]*kpara, (advkm + dv1[i]*kpara)*advkm + b2);
+                    double ilogfac = atan2(abs(b)*dv1[i]*kpara, (advkm + dv1[i]*kpara)*advkm + b2);
                     L0 = cdouble(rlogfac, ilogfac);
                     cdouble powarr[3];
                     const cdouble dvarr[]{dv1[i], dv2[i], dv3[i]};
