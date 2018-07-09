@@ -288,7 +288,13 @@ public://TODO: private later
                     L2 = L3 - powarr[2]*narr[2]*dvarr[2];
                     L1 = L2 - powarr[1]*narr[1]*dvarr[1];
                     L0 = L1 - powarr[0]*narr[0]*dvarr[0];
-
+                    if (wi<0.0){
+                        cdouble di = I*L0.imag();
+                        L0 -= di;
+                        L1 -= di;
+                        L2 -= di;
+                        L3 -= di;
+                    }
                 }else{
                     double advkm = a - d - vpara_hm[i] * kpara;
                     double rlogfac = 0.5 * log1p(dv1[i] * kpara * (dv1[i] * kpara - 2.0 * advkm) / (advkm * advkm + b2));
@@ -429,37 +435,43 @@ public:
         return detM * pow(wa, 4) / pow((kpara * kpara + kperp * kperp) * cl * cl, 2);
     }
 
-    double polarity(const double wr, const double wi) { /*Unfinished! This is a stub!*/
-//        array<array<array<array<cdouble, 7>, 5>, 3>, 3> M{};
-//        array<array<cdouble, 3>, 3> Mv{};
-//        for (Species &spec: species) {
-//            M += spec.push_omega(kpara, wr, wi);
-//        }
+    np::ndarray evaluateM(const double wr, const double wi) { /*Unfinished! This is a stub!*/
+        array<array<cdouble, 3>, 3> M{};
+        for (Species &spec: species) {
+            M += spec.push_omega(kpara, kperp, wr, wi);
+        }
 
-//        M[0][0][2][4] += 1.0;
-//        M[1][1][2][4] += 1.0;
-//        M[2][2][2][4] += 1.0;
+        double kperp2 = kperp*kperp;
+        double kperp3 = kperp2*kperp;
+        double kperp4 = kperp2*kperp2;
+        double kpara2 = kpara*kpara;
+        double kpara4 = kpara2*kpara2;
+        double kpara5 = kpara4*kpara;
+        double kpara6 = kpara4*kpara2;
 
-//        cdouble c2_w2 = pow(cl / cdouble{wr, wi}, 2);
+        M[0][0] += kperp2*kpara4;
+        M[1][1] += kperp2*kpara4;
+        M[2][2] += kperp2*kpara4;
 
-        //M[0][0][2][6] -= c2_w2;
-        //M[0][2][3][5] += c2_w2;
-        //M[1][1][2][6] -= c2_w2;
-        //M[1][1][4][4] -= c2_w2;
-        //M[2][0][3][5] += c2_w2;
-        //M[2][2][4][4] -= c2_w2;
+        cdouble c2_w2 = pow(cl / cdouble{wr, wi}, 2);
 
-//        for (size_t i=0;i<3;i++){
-//            for (size_t j=0;j<3;j++){
-//                Mv[i][j] = polyEval(M[i][j], kpara, kperp)/(pow(kpara, 4)*pow(kperp, 2));
-//            }
-//        }
+        M[0][0] -= c2_w2*kperp2*kpara6;
+        M[0][2] += c2_w2*kperp3*kpara5;
+        M[1][1] -= c2_w2*kperp2*kpara6;
+        M[1][1] -= c2_w2*kperp4*kpara4;
+        M[2][0] += c2_w2*kperp3*kpara5;
+        M[2][2] -= c2_w2*kperp4*kpara4;
 
-//       cout<<"("<<Mv[0][0]<<", "<<Mv[0][1]<<", "<<Mv[0][2]<<")"<<endl;
-//        cout<<"("<<Mv[1][0]<<", "<<Mv[1][1]<<", "<<Mv[1][2]<<")"<<endl;
-//        cout<<"("<<Mv[2][0]<<", "<<Mv[2][1]<<", "<<Mv[2][2]<<")"<<endl;
+        p::tuple shape = p::make_tuple(3, 3);
+        np::ndarray npM = np::zeros(shape, np::dtype::get_builtin<cdouble>());
 
-        return 1.0;
+        for (size_t i=0;i<3;i++){
+            for (size_t j=0;j<3;j++){
+                npM[i][j] = M[i][j]/(kperp2*kpara4);
+            }
+        }
+
+        return npM;
     }
 
     np::ndarray marginalize(const np::ndarray &arr) {
@@ -494,7 +506,7 @@ BOOST_PYTHON_MODULE (libSolver) {
             .def("push_kperp", &Solver::push_kperp)
             .def("push_kpara", &Solver::push_kpara)
             .def("evaluate", &Solver::evaluate)
-            .def("polarity", &Solver::polarity)
+            .def("evaluateM", &Solver::evaluateM)
             .def("marginalize", &Solver::marginalize);
 
 }
