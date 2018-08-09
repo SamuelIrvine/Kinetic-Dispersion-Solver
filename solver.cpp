@@ -75,7 +75,7 @@ public:
         M[2][0] += c2_w2*kperp3*kpara5;
         M[2][2] -= c2_w2*kperp4*kpara4;
 
-        M *= (1.0/kpara4*kperp2);
+        M *= (1.0/(kpara4*kperp2));
 
 
 
