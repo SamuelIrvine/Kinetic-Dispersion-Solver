@@ -82,8 +82,46 @@ public:
         return M;
     };
 
+    array<array<cdouble, 3>, 3> evaluateEps(const double wr, const double wi) {
+        array<array<cdouble, 3>, 3> Eps{};
+        for (Species &spec: species) {
+            Eps += spec.push_omega(kpara, kperp, wr, wi);
+        }
+
+        double kperp2 = kperp*kperp;
+        double kperp3 = kperp2*kperp;
+        double kperp4 = kperp2*kperp2;
+        double kpara2 = kpara*kpara;
+        double kpara4 = kpara2*kpara2;
+
+        Eps[0][0] += kperp2*kpara4;
+        Eps[1][1] += kperp2*kpara4;
+        Eps[2][2] += kperp2*kpara4;
+
+        Eps *= (1.0/(kpara4*kperp2));
+
+
+
+        return Eps;
+    };
+
     np::ndarray convertM(const double wr, const double wi) {
         array<array<cdouble, 3>, 3> M = evaluateM(wr, wi);
+
+        p::tuple shape = p::make_tuple(3, 3);
+        np::ndarray npM = np::zeros(shape, np::dtype::get_builtin<cdouble>());
+
+        for (size_t i=0;i<3;i++){
+            for (size_t j=0;j<3;j++){
+                npM[i][j] = M[i][j];
+            }
+        }
+
+        return npM;
+    }
+
+    np::ndarray convertEps(const double wr, const double wi) {
+        array<array<cdouble, 3>, 3> M = evaluateEps(wr, wi);
 
         p::tuple shape = p::make_tuple(3, 3);
         np::ndarray npM = np::zeros(shape, np::dtype::get_builtin<cdouble>());
@@ -148,6 +186,7 @@ BOOST_PYTHON_MODULE (libSolver) {
             .def("evaluateDetM", &Solver::evaluateDetM)
             .def("evaluateDetMLongitudinal", &Solver::evaluateDetMLongitudinal)
             .def("evaluateM", &Solver::convertM)
+            .def("evaluateEps", &Solver::convertEps)
             .def("marginalize", &Solver::marginalize);
 }
 
