@@ -139,7 +139,7 @@ array<array<cdouble, 3>, 3> Species::push_omega(const double kpara, const double
             cdouble cx = kpara*iapbmd;
             cdouble L0, L1, L2, L3;
             const double narr[]{1./1., 1./2., 1./3., 1./4., 1./5., 1./5., 1./7., 1./8.};
-            if ((vpara_hm[i]+vpara_hp[i])*(vpara_hm[i]+vpara_hp[i])*(cx.real()*cx.real() + cx.imag()*cx.imag()) < 0.000001){
+            if ((vpara_hm[i]+vpara_hp[i])*(vpara_hm[i]+vpara_hp[i])*(cx.real()*cx.real() + cx.imag()*cx.imag()) < -0.000001){
                 cdouble logfacsum{0.0, 0.0};
                 cdouble powarr[8];
                 const cdouble dvarr[]{dv1[i], dv2[i], dv3[i], dv4[i], dv5[i], dv6[i],dv7[i], dv8[i]};
@@ -154,17 +154,18 @@ array<array<cdouble, 3>, 3> Species::push_omega(const double kpara, const double
                 L2 = L3 - powarr[2]*narr[2]*dvarr[2];
                 L1 = L2 - powarr[1]*narr[1]*dvarr[1];
                 L0 = L1 - powarr[0]*narr[0]*dvarr[0];
-                if (wi<0.0){
-                    cdouble di = I*L0.imag();
-                    L0 -= di;
-                    L1 -= di;
-                    L2 -= di;
-                    L3 -= di;
-                }
+//                if (wi<0.0){
+//                    cdouble di = I*L0.imag();
+//                    L0 -= di;
+//                    L1 -= di;
+//                    L2 -= di;
+//                    L3 -= di;
+//                }
             }else{
                 double advkm = a - d - vpara_hm[i] * kpara;
                 double rlogfac = 0.5 * log1p(dv1[i] * kpara * (dv1[i] * kpara - 2.0 * advkm) / (advkm * advkm + b2));
-                double ilogfac = atan2(abs(b)*dv1[i]*kpara, (advkm + dv1[i]*kpara)*advkm + b2);
+                //double ilogfac = atan2(abs(b)*dv1[i]*kpara, (advkm + dv1[i]*kpara)*advkm + b2);
+                double ilogfac = atan2(b*dv1[i]*kpara, (advkm + dv1[i]*kpara)*advkm + b2);
                 L0 = cdouble(rlogfac, ilogfac);
                 cdouble powarr[3];
                 const cdouble dvarr[]{dv1[i], dv2[i], dv3[i]};
