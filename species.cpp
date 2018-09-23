@@ -184,10 +184,14 @@ array<array<cdouble, 3>, 3> Species::push_omega(const double kpara, const double
                 //}
 
             }
-            //if (abs(apbmd.real()) < abs(dv1[i]*kpara)){
+            if ((b<0.0)&&(abs(apbmd.real()) < abs(dv1[i]*kpara))){
                 //analytic continuation
                 //add 2*I*pi*F
-            //}
+                L0 += 2.0*I*M_PI;
+                L1 += 2.0*I*M_PI;
+                L2 += 2.0*I*M_PI;
+                L3 += 2.0*I*M_PI;
+            }
 
 
             for (size_t k = 0; k < 6; k++) {
