@@ -179,6 +179,8 @@ array<array<cdouble, 3>, 3> Species::push_omega(const double kpara, const double
                 if (b<0.0) {
                     L0 = L0 - 2 * L0.imag();
                     L1 = L1 - 2 * L1.imag();
+                    L2 = L2 - 2 * L2.imag();
+                    L3 = L3 - 2 * L3.imag();
                 }
 
             }
