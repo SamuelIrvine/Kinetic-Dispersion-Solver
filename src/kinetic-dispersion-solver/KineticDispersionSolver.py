@@ -1,13 +1,6 @@
 import numpy as np
-#import matplotlib.pyplot as plt
-import libSolver
-import time
-from scipy.special import jv
-from scipy.special import jvp
 from scipy.optimize import minimize
-from scipy.sparse import coo_matrix
-from scipy.integrate import simps
-
+import libSolver
 
 class Species:
 
@@ -31,7 +24,6 @@ class Species:
         self.fv_h *= normfv
         self.df_dvpara_h = normfv*(0.5*fv[1:, 1:] - 0.5*fv[:-1, 1:] + 0.5*fv[1:, :-1] - 0.5*fv[:-1, :-1])/np.outer(self.dvpara_h, np.ones(len(vperp)-1))
         self.df_dvperp_h = normfv*(0.5*fv[1:, 1:] - 0.5*fv[1:, :-1] + 0.5*fv[:-1, 1:] - 0.5*fv[:-1, :-1])/np.outer(np.ones(len(vpara)-1), self.dvperp_h)
-
 
 class Solver:
 
@@ -116,7 +108,7 @@ class Solver:
 
     def roots(self, ww, k, insolution=None):
         """Finds roots for a given marginalization of complex frequencies and value of k. """
-        if insolution == None:
+        if insolution is None:
             insolution = self.marginalize(ww, k)
         candidates = self.identify(ww, k, insolution)
         roots = []
@@ -143,25 +135,25 @@ class Solver:
         wi = w.imag
         self.set_k(k)
         M = self.lib.evaluateM(wr, wi)
-        eigvals, Es = np.linalg.eig(M)
-        Es = Es.T[np.argsort(np.abs(eigvals))]
-        e1 = Es[0] #solution direction
+        eigenvalues, es = np.linalg.eig(M)
+        es = es.T[np.argsort(np.abs(eigenvalues))]
+        e1 = es[0] #solution direction
         e1 = e1/np.sum(np.abs(e1)**2)**0.5
         ku = np.array((k[1], 0.0, k[0]))/(k[0]**2 + k[1]**2)**0.5 #propagation direction
         dop = np.arccos(np.abs(np.abs(e1).dot(ku))) #Degree of polarization
         theta = np.arctan2(k[1], k[0])
-        ctheta = np.cos(theta)
-        stheta = np.sin(theta)
-        Ry = np.matrix(((ctheta, 0.0, stheta),
+        cos_theta = np.cos(theta)
+        sin_theta = np.sin(theta)
+        Ry = np.matrix(((cos_theta, 0.0, sin_theta),
                         (0.0, 1.0, 0.0),
-                        (-stheta, 0.0, ctheta)))
+                        (-sin_theta, 0.0, cos_theta)))
         e1r = Ry.dot(e1) #Now in basis where we can determine polarization
         px = e1r[0, 0]
         py = e1r[0, 1]
         phi = np.arctan2(np.abs(py), np.abs(px)) #orientation of polarization
-        alphax = np.arctan2(px.imag, px.real)
-        alphay = np.arctan2(py.imag, py.real)
-        beta = alphay - alphax
+        alpha_x = np.arctan2(px.imag, px.real)
+        alpha_y = np.arctan2(py.imag, py.real)
+        beta = alpha_y - alpha_x
         if beta > np.pi:
             beta = beta - 2*np.pi
         if beta < -np.pi:
@@ -172,102 +164,14 @@ class Solver:
             beta -= 2*beta - np.pi
         return dop, beta, phi
 
-    def getTensorElements(self, w, k):
+    def get_tensor_elements(self, w, k):
         wr = w.real
         wi = w.imag
         self.set_k(k)
         return self.lib.evaluateM(wr, wi)
 
-    def getDielectricTensorElements(self, w, k):
+    def get_dielectric_tensor_elements(self, w, k):
         wr = w.real
         wi = w.imag
         self.set_k(k)
         return self.lib.evaluateEps(wr, wi)
-
-
-
-    #return 2 variables, P, beta
-
-
-
-if __name__ == '__main__':
-    kb = 1.38E-23
-    me = 9.11E-31
-    T = 11500*1000
-    B = 2.0
-    e = 1.6E-19
-    e0 = 8.85E-12
-    density = 2.5E19
-    vth = (kb*T/me)**0.5
-
-    wpe = (density*e**2/(e0*me))**0.5
-    wce = e*B/me
-
-    #Outline distribution bounds
-    vparamin = -5*vth
-    vparamax = 25*vth
-    vperpmin = 0.0*vth
-    vperpmax = 5*vth
-
-    #Define grids and staggered grids
-    npara = 1000
-    nperp = 1000
-    vpara = np.linspace(vparamin, vparamax, npara, dtype='float64')
-    vperp = np.linspace(vperpmin, vperpmax, nperp, dtype='float64')
-
-    #Define distributions
-    xi = 0.00512 #Tail fraction
-    vm = 18.5*vth #Tail max velocity
-    Fvperp = np.exp((-0.5*vperp**2/vth**2)) #Note: we have defined temperature this way.
-    Fvpara = np.exp((-0.5*vpara**2/vth**2))
-    Fvpara = Fvpara/np.sum(Fvpara) #Normalize to 1 as intermediate step
-    Fvtail = np.where((vpara>0.0) & (vpara<vm), 1.0, 0.0) #Define bounds of flat tail
-    Fvtail = xi*Fvtail/np.sum(Fvtail) #Normalize tail
-    Fvpara = np.maximum(Fvpara, Fvtail) #Combine tail with background maxwellian
-    Fv = np.outer(Fvpara, Fvperp)
-
-    s1 = Species(-1*e, me, density, vpara, vperp, Fv, np.arange(-2, 3))
-
-    solver = Solver(B, [s1])
-
-
-    w = wpe*1.2 + wpe*0.0011j
-    k = [0.12*wpe/vth, 0.11*wpe/vth]
-
-    #solver.lib.push_kpara(k[0])
-    #solver.lib.push_kperp(k[1])
-    #solver.lib.evaluate(w.real, w.imag)
-
-    #a = (wpe**2/((w-wce)*(w+wce)))
-    #b = (1.0j*wce*wpe**2/(w*(w+wce)*(w-wce)))
-    #c = wpe**2/w**2
-
-    #print 1.0 - a
-    #print b
-    #print 1.0 - c
-
-    #print (1.0 - c)*((1.0 - a)*(1.0 - a) - (b)*(-b))
-
-    soln = solver.solve(w, k)
-    print soln
-    print soln[0]/wpe
-
-    wrs = np.linspace(0.001*wpe, 2*wpe, 100)
-    wis = np.linspace(0.00001*wpe, 0.001*wpe, 100)*1.0j
-    wws = np.outer(wrs, np.ones(len(wis))) + np.outer(np.ones(len(wrs)), wis)
-
-    #ww = np.linspace(0.001*wpe, 2*wpe, 1000) + 0.00000001j*wpe
-    t0 = time.time()
-    mms = solver.marginalize(wws, k)
-    t1 = time.time()
-    print 'Duration: '+str(t1-t0)
-    print np.array(solver.growth(wws, k))/wpe
-#plt.imshow(np.log(mms))
-#plt.show()
-#print 0.5*((wce**2+4*wpe**2)**0.5 + wce)/wpe
-#print 0.5*((wce**2+4*wpe**2)**0.5 - wce)/wpe
-#print 'Done!'
-#roots = solver.roots(ww, k)
-#for root in roots:
-#	print root[0]/wpe
-
