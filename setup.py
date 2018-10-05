@@ -93,7 +93,7 @@ class CMakeBuild(build_ext):
         copymode(src_file, dest_file)
 
 setup(
-    name='Kinetic-Dispersion-Solver',
+    name='kinetic-dispersion-solver',
     version='0.5',
     author='Samuel W. A. Irvine',
     author_email='samuel.w.a.irvine+github@gmail.com',
@@ -101,7 +101,7 @@ setup(
     long_description='A code to solve kinetic dispersion relations in magnetized plasmas characterized by arbitrary gyrotropic velocity distribution functions. ',
     packages=find_packages('src'),
     package_dir={'':'src'},
-    ext_modules=[CMakeExtension('Kinetic-Dispersion-Solver/Kinetic-Dispersion-Solver')],
+    ext_modules=[CMakeExtension('kinetic-dispersion-solver/kinetic-dispersion-solver')],
     cmdclass=dict(build_ext=CMakeBuild),
     test_suite='tests',
     zip_safe=False,

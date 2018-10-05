@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(src/Kinetic-Dispersion-Solver)
+project(Kinetic-Dispersion-Solver)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS "-Ofast")
@@ -43,12 +43,9 @@ IF(Boost_FOUND)
     SET(Boost_USE_STATIC_LIBS OFF)
     SET(Boost_USE_MULTITHREADED ON)
     SET(Boost_USE_STATIC_RUNTIME OFF)
-
-    ADD_LIBRARY(Solver SHARED src/Kinetic-Dispersion-Solver/solver src/Kinetic-Dispersion-Solver/species.cpp src/Kinetic-Dispersion-Solver/species.h src/Kinetic-Dispersion-Solver/common.h src/Kinetic-Dispersion-Solver/arrayutils.cpp src/Kinetic-Dispersion-Solver/arrayutils.h src/Kinetic-Dispersion-Solver/relativisticspecies.cpp src/Kinetic-Dispersion-Solver/relativisticspecies.h)
-    TARGET_LINK_LIBRARIES(Solver ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
-
-    #ADD_LIBRARY(RelativisticSolver SHARED solver2)
-    #TARGET_LINK_LIBRARIES(RelativisticSolver ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
+    add_subdirectory(src/kinetic-dispersion-solver)
+    #set_target_properties(Solver PROPERTIES
+    #        LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/out/library)
 ELSEIF(NOT Boost_FOUND)
     MESSAGE(FATAL_ERROR "Unable to find correct Boost version. Did you set BOOST_ROOT?")
 ENDIF()
