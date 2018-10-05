@@ -2,6 +2,7 @@ import numpy as np
 from scipy.optimize import minimize
 import libSolver
 
+
 class Species:
 
     def __init__(self, charge, mass, density, vpara, vperp, fv, ns):
@@ -24,6 +25,7 @@ class Species:
         self.fv_h *= normfv
         self.df_dvpara_h = normfv*(0.5*fv[1:, 1:] - 0.5*fv[:-1, 1:] + 0.5*fv[1:, :-1] - 0.5*fv[:-1, :-1])/np.outer(self.dvpara_h, np.ones(len(vperp)-1))
         self.df_dvperp_h = normfv*(0.5*fv[1:, 1:] - 0.5*fv[1:, :-1] + 0.5*fv[:-1, 1:] - 0.5*fv[:-1, :-1])/np.outer(np.ones(len(vpara)-1), self.dvperp_h)
+
 
 class Solver:
 
@@ -50,7 +52,8 @@ class Solver:
         return insolution
 
     def identify(self, ww, k, insolution):
-        """Identifies local minima by marginalization of insolution for a complex array of frequencies and fixed value of k. """
+        """Identifies local minima by marginalization of insolution for a complex array of frequencies
+         and fixed value of k. """
         insolution = np.abs(insolution)
         if len(np.shape(insolution)) == 1:
             minimas = np.where((insolution[1:-1] < insolution[2:])
@@ -86,7 +89,6 @@ class Solver:
                 bounds.append(((wwpad[0:-2, 1:-1][zip(minima)].real, wwpad[2:, 1:-1][zip(minima)].real),
                                (wwpad[1:-1, 0:-2][zip(minima)].imag, wwpad[1:-1, 2:][zip(minima)].imag)))
             return zip(ww[minimas], insolution[minimas], bounds)
-
 
     def solve(self, wguess, k, bounds=((None, None), (None, None))):
         """Attempts to compute numerical convergence given a single frequency guess and fixed value of k. """

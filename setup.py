@@ -3,14 +3,12 @@
 import os
 import re
 import sys
-import sysconfig
 import platform
 import subprocess
 
 from distutils.version import LooseVersion
 from setuptools import setup, Extension, find_packages
 from setuptools.command.build_ext import build_ext
-from setuptools.command.test import test as TestCommand
 from shutil import copyfile, copymode
 
 
@@ -92,17 +90,19 @@ class CMakeBuild(build_ext):
         copyfile(src_file, dest_file)
         copymode(src_file, dest_file)
 
+
 setup(
     name='kinetic-dispersion-solver',
     version='0.5',
     author='Samuel W. A. Irvine',
     author_email='samuel.w.a.irvine+github@gmail.com',
     description='A kinetic dispersion solver',
-    long_description='A code to solve kinetic dispersion relations in magnetized plasmas characterized by arbitrary gyrotropic velocity distribution functions. ',
+    long_description='A code to solve kinetic dispersion relations in magnetized plasmas'
+                     ' characterized by arbitrary gyrotropic velocity distribution functions. ',
     packages=find_packages('src'),
     package_dir={'':'src'},
     ext_modules=[CMakeExtension('kinetic-dispersion-solver/kinetic-dispersion-solver')],
     cmdclass=dict(build_ext=CMakeBuild),
     test_suite='tests',
-    zip_safe=False,
+    zip_safe=False, install_requires=['numpy', 'scipy']
 )
