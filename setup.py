@@ -92,7 +92,7 @@ class CMakeBuild(build_ext):
 
 
 setup(
-    name='kinetic-dispersion-solver',
+    name='KineticDispersion',
     version='0.5',
     author='Samuel W. A. Irvine',
     author_email='samuel.w.a.irvine+github@gmail.com',
