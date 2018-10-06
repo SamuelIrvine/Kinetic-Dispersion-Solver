@@ -72,11 +72,11 @@ class CMakeBuild(build_ext):
         print()  # Add an empty line for cleaner output
 
     def copy_test_file(self, src_file):
-        '''
+        """
         Copy ``src_file`` to ``dest_file`` ensuring parent directory exists.
         By default, message like `creating directory /path/to/package` and
         `copying directory /src/path/to/package -> path/to/package` are displayed on standard output. Adapted from scikit-build.
-        '''
+        """
         # Create directory if needed
         dest_dir = os.path.join(os.path.dirname(
             os.path.abspath(__file__)), 'tests', 'bin')
