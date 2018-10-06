@@ -101,7 +101,7 @@ setup(
                      ' characterized by arbitrary gyrotropic velocity distribution functions. ',
     packages=find_packages('src'),
     package_dir={'': 'src'},
-    ext_modules=[CMakeExtension('kinetic_dispersion_solver/kinetic_dispersion_solver')],
+    ext_modules=[CMakeExtension('KineticDispersion/KineticDispersion')],
     cmdclass=dict(build_ext=CMakeBuild),
     test_suite='tests',
     zip_safe=False, install_requires=['numpy', 'scipy']
