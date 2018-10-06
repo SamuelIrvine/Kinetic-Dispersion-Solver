@@ -100,7 +100,7 @@ setup(
     long_description='A code to solve kinetic dispersion relations in magnetized plasmas'
                      ' characterized by arbitrary gyrotropic velocity distribution functions. ',
     packages=find_packages('src'),
-    package_dir={'':'src'},
+    package_dir={'': 'src'},
     ext_modules=[CMakeExtension('kinetic-dispersion-solver/kinetic-dispersion-solver')],
     cmdclass=dict(build_ext=CMakeBuild),
     test_suite='tests',
