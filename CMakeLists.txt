@@ -43,7 +43,7 @@ IF(Boost_FOUND)
     SET(Boost_USE_STATIC_LIBS OFF)
     SET(Boost_USE_MULTITHREADED ON)
     SET(Boost_USE_STATIC_RUNTIME OFF)
-    add_subdirectory(src/kinetic-dispersion-solver)
+    add_subdirectory(src/kinetic_dispersion_solver)
     #set_target_properties(Solver PROPERTIES
     #        LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/out/library)
 ELSEIF(NOT Boost_FOUND)
