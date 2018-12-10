@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <boost/math/complex.hpp>
+#include <vector>
 
 namespace bm = boost::math;
 
