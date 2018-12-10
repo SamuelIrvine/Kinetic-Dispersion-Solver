@@ -110,7 +110,7 @@ class Solver:
 
     def roots(self, ww, k, insolution=None):
         """Finds roots for a given marginalization of complex frequencies and value of k. """
-        if insolution is None:
+        if insolution is None:f
             insolution = self.marginalize(ww, k)
         candidates = self.identify(ww, k, insolution)
         roots = []
