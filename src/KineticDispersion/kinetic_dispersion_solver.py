@@ -98,7 +98,7 @@ class Solver:
         wrbounds = bounds[0]
         wibounds = bounds[1]
         dwr = abs(wrbounds[1] - wrbounds[0])[0]
-        if (wibounds[1] == None or wibounds[0] == None):
+        if (wibounds[1] is None or wibounds[0] is None):
             wibounds = (np.array([wi*0.95, 0.0]), np.array([wi*1.05, 0.0]))
         dwi = abs(wibounds[1] - wibounds[0])[0]
         eps = min(dwr, dwi)*0.0001
