@@ -30,8 +30,8 @@ class CMakeBuild(build_ext):
         if platform.system() == "Windows":
             cmake_version = LooseVersion(re.search(r'version\s*([\d.]+)',
                                                    out.decode()).group(1))
-            if cmake_version < '3.1.0':
-                raise RuntimeError("CMake >= 3.1.0 is required on Windows")
+            if cmake_version < '3.7.2':
+                raise RuntimeError("CMake >= 3.7.2 is required on Windows")
 
         for ext in self.extensions:
             self.build_extension(ext)
@@ -104,5 +104,5 @@ setup(
     ext_modules=[CMakeExtension('KineticDispersion/KineticDispersion')],
     cmdclass=dict(build_ext=CMakeBuild),
     test_suite='tests',
-    zip_safe=False, install_requires=['numpy', 'scipy']
+    zip_safe=False, install_requires=['numpy', 'scipy<1.3']
 )
