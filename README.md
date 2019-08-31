@@ -4,7 +4,7 @@ Solves the kinetic dispersion relation for a homogenous magnetized plasma charac
 ### Installation
 These commands work for a fresh Ubuntu 18.04 installation. 
 
-The boost-python-numpy module was only merged in Boost version 1.63.0. In some older linux variants it may be necessary to manually build this. 
+The boost-python-numpy module was only merged in Boost version 1.63.0. In some older linux distributions it may be necessary to manually build this. 
 
 ```
 sudo apt-get install python-pip jupyter make cmake libboost-all-dev
