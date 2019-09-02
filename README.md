@@ -30,7 +30,7 @@ sudo python setup.py install
 
 ### Getting started
 
-We recommend that users begin by modifying one of the four provided examples [examples](examples). 
+We recommend that users begin by modifying one of the four provided [examples](examples). 
 
 ## Authors
 
